@@ -1,5 +1,0 @@
-packages:
-  - "frontend"
-  - "backend"
-minimumReleaseAgeExclude:
-  - vite@8.1.1

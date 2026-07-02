@@ -1,36 +1,16 @@
-# AuthorGit 🖋️
+# React + Vite
 
-Sebuah aplikasi web lokal (*local-first*) bergaya premium yang berfungsi sebagai editor naskah cerdas. Aplikasi ini merangkai bab-bab ceritamu dari file fisik `.md` (Markdown) murni agar mudah terhubung dengan Obsidian, sambil mengamankan setiap huruf yang kamu ketik menggunakan mesin **Git**.
+This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
----
+Currently, two official plugins are available:
 
-## 🚀 Cara Menjalankan Aplikasi (Native Local Mode)
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-Karena aplikasi ini dirancang layaknya Desktop App (agar memiliki kebebasan menyimpan folder di mana pun di dalam komputermu), kita akan menjalankannya secara *native* menggunakan Node.js tanpa Docker.
+## React Compiler
 
-### 1. Jalankan Backend (Mesin Penyimpan & Git)
-Buka terminal baru, masuk ke direktori `backend`, lalu jalankan:
-```bash
-cd backend
-npm install
-npm run dev
-```
-*Server belakang layar akan menyala di http://localhost:3001*
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-### 2. Jalankan Frontend (Antarmuka Web)
-Buka terminal baru lainnya, masuk ke direktori `frontend`, lalu jalankan:
-```bash
-cd frontend
-npm install
-npm run dev
-```
-*Tampilan UI akan menyala. Buka browser dan kunjungi **http://localhost:5173***
+## Expanding the Oxlint configuration
 
----
-
-## 💡 Fitur Kunci
-
-* **Workspace Dashboard:** Tampilan galeri interaktif untuk manajemen koleksi bukumu.
-* **Custom Vault Path:** Saat membuat buku baru, kamu bisa bebas menentukan *Absolute Path* (misal: `/home/auttomus/Documents/Obsidian/Novel_Ku`) sebagai tempat penyimpanan fisik file Markdown-mu.
-* **Real-time File Explorer:** Sidebar layaknya VS Code.
-* **The "Time Machine" (Git Auto-Save):** Menyimpan file `.md` sekaligus melakukan Git Commit otomatis di latar belakang untuk melindungi tulisanmu dari salah hapus.
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.

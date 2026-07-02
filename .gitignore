@@ -1,43 +1,28 @@
-# Dependencies
-node_modules/
-dist/
-build/
-.next/
-
-# Environment files
-.env
-.env.local
-.env.development
-.env.test
-.env.production
-.env*.local
-
 # Logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
 
-# Database & App specific data
-library.json
-books/
-*.sqlite
-*.db
+node_modules
+dist
+dist-ssr
+*.local
 
-# OS Files
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# IDEs
-.vscode/
-.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# Tauri
+src-tauri/target/
+src-tauri/gen/
