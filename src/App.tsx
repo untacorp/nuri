@@ -24,7 +24,6 @@ export default function App() {
   
   const [modalConfig, setModalConfig] = useState<{ isOpen: boolean, type: string, parentNode: LibraryNode | null }>({ isOpen: false, type: 'book', parentNode: null });
   
-  const ws = useRef<WebSocket | null>(null);
   const isUpdatingFromWs = useRef(false);
   const lastSentMarkdown = useRef('');
   const activePathRef = useRef<string | null>(null);
