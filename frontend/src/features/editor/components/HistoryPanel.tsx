@@ -1,11 +1,23 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { History, GitCommit, X, Clock, RefreshCw } from 'lucide-react';
 import { fetchHistory, fetchHistoryContent } from '../services/api';
 
-export default function HistoryPanel({ activePath, onClose, onContentSelect, onVariationCreated }) {
-  const [history, setHistory] = useState([]);
+interface Commit {
+  hash: string;
+  message: string;
+  date: string;
+}
+
+interface HistoryPanelProps {
+  activePath: string | null;
+  onClose: () => void;
+  onContentSelect: (content: string, hash: string) => void;
+}
+
+export default function HistoryPanel({ activePath, onClose, onContentSelect }: HistoryPanelProps) {
+  const [history, setHistory] = useState<Commit[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedHash, setSelectedHash] = useState(null);
+  const [selectedHash, setSelectedHash] = useState<string | null>(null);
   
   const loadHistory = useCallback(() => {
     if (activePath) {
@@ -22,7 +34,8 @@ export default function HistoryPanel({ activePath, onClose, onContentSelect, onV
     setSelectedHash(null);
   }, [activePath, loadHistory]);
 
-  const handleViewCommit = (hash) => {
+  const handleViewCommit = (hash: string) => {
+    if (!activePath) return;
     setSelectedHash(hash);
     fetchHistoryContent(activePath, hash).then(data => {
       onContentSelect(data.content, hash);

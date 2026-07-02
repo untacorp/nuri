@@ -1,12 +1,27 @@
 import React, { useState } from 'react';
 import { FileText, Folder, FolderOpen, Plus, ChevronRight, ChevronDown } from 'lucide-react';
 
-export default function TreeNode({ node, activePath, onSelect, onOpenModal, onContextMenu }) {
+export interface LibraryNode {
+  name: string;
+  type: string;
+  path: string;
+  children?: LibraryNode[];
+}
+
+interface TreeNodeProps {
+  node: LibraryNode;
+  activePath: string | null;
+  onSelect: (path: string) => void;
+  onOpenModal: (type: string, node: LibraryNode) => void;
+  onContextMenu?: (e: React.MouseEvent, node: LibraryNode) => void;
+}
+
+export default function TreeNode({ node, activePath, onSelect, onOpenModal, onContextMenu }: TreeNodeProps) {
   const [isOpen, setIsOpen] = useState(true);
   const isPart = node.type === 'part' || node.type === 'version';
   const isActive = activePath === node.path;
 
-  const handleToggle = (e) => {
+  const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsOpen(!isOpen);
   };
@@ -62,7 +77,7 @@ export default function TreeNode({ node, activePath, onSelect, onOpenModal, onCo
       
       {!isPart && isOpen && node.children && (
         <div className="ml-3 border-l border-border-main pl-1.5">
-          {node.children.map((child, idx) => (
+          {node.children.map((child: LibraryNode, idx: number) => (
             <TreeNode key={idx} node={child} activePath={activePath} onSelect={onSelect} onOpenModal={onOpenModal} onContextMenu={onContextMenu} />
           ))}
         </div>

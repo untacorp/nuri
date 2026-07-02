@@ -1,24 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { FileText, ArrowLeft, ArrowLeftRight, Plus, History, X, Bold, Italic, Strikethrough, Heading1, Heading2, List, ListOrdered, Eye, Pencil, Copy } from 'lucide-react';
 import { EditorContent } from '@tiptap/react';
 import { turndownService } from '../utils/markdown';
 import { generateDiffHtml } from '../utils/diffRenderer';
 import { compileManuscript, renameNode, deleteNode } from '../../library/services/api';
 import { createVariation } from '../services/api';
-import TreeNode from '../../library/components/TreeNode';
+import TreeNode, { LibraryNode } from '../../library/components/TreeNode';
 import HistoryPanel from './HistoryPanel';
 import AssemblerView from '../../assembler/components/AssemblerView';
 import { showPrompt, showConfirm, showAlert } from '../../ui/components/GlobalDialog';
 
+interface EditorViewProps {
+  activeBook: LibraryNode | null;
+  activePath: string | null;
+  onSelectPath: (path: string | null) => void;
+  goHome: () => void;
+  sidebarPosition: 'left' | 'right';
+  setSidebarPosition: React.Dispatch<React.SetStateAction<'left' | 'right'>>;
+  onOpenModal: (type: string, parentNode: LibraryNode | null) => void;
+  editor: any;
+  status: string;
+  setStatus: React.Dispatch<React.SetStateAction<string>>;
+  reloadTree: () => void;
+}
+
 export default function EditorView({
   activeBook, activePath, onSelectPath,
   goHome, sidebarPosition, setSidebarPosition,
-  onOpenModal, editor, status, reloadTree
-}) {
+  onOpenModal, editor, status, setStatus, reloadTree
+}: EditorViewProps) {
   const [showHistory, setShowHistory] = useState(false);
-  const [diffContent, setDiffContent] = useState(null); // { html, hash }
+  const [diffContent, setDiffContent] = useState<{ html: string; hash: string } | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(false);
-  const [contextMenu, setContextMenu] = useState(null); // { x: number, y: number, node: object }
+  const [contextMenu, setContextMenu] = useState<{ x: number, y: number, node: LibraryNode } | null>(null);
 
   useEffect(() => {
     const handleCloseMenu = () => setContextMenu(null);
@@ -26,7 +40,7 @@ export default function EditorView({
     return () => window.removeEventListener('click', handleCloseMenu);
   }, []);
 
-  const handleContextMenu = (e, node) => {
+  const handleContextMenu = (e: React.MouseEvent, node: LibraryNode) => {
     e.preventDefault();
     e.stopPropagation();
     setContextMenu({
@@ -36,7 +50,7 @@ export default function EditorView({
     });
   };
 
-  const handleRename = async (node) => {
+  const handleRename = async (node: LibraryNode) => {
     const oldName = node.name.replace('.md', '');
     const newName = await showPrompt(`Ubah nama "${oldName}" menjadi:`, oldName);
     if (newName && newName.trim() && newName.trim() !== oldName) {
@@ -53,7 +67,7 @@ export default function EditorView({
     }
   };
 
-  const handleConfirmDelete = async (node) => {
+  const handleConfirmDelete = async (node: LibraryNode) => {
     const name = node.name.replace('.md', '');
     const isConfirmed = await showConfirm("Hapus Permanen?", `Apakah kamu yakin ingin menghapus "${name}" secara permanen?`);
     if (isConfirmed) {
@@ -94,14 +108,14 @@ export default function EditorView({
   const isFolderView = activePath && !activePath.endsWith('.md');
   const chapterName = isFolderView ? activePath.split('/').pop() : '';
 
-  const handleSelectHistory = (content, hash) => {
+  const handleSelectHistory = async (content: string, hash: string) => {
     const currentMarkdown = turndownService.turndown(editor.getHTML());
-    const diffHtml = generateDiffHtml(content, currentMarkdown);
+    const diffHtml = await generateDiffHtml(content, currentMarkdown);
     setDiffContent({ html: diffHtml, hash });
   };
 
   const handleCreateVariationFromDiff = async () => {
-    if (!diffContent || !diffContent.hash) return;
+    if (!diffContent || !diffContent.hash || !activePath) return;
     const suffix = await showPrompt("Nama akhiran variasi (misal: v2, alt, revisi):", "v2");
     if (suffix) {
       createVariation(activePath, suffix, diffContent.hash).then(() => {
@@ -158,6 +172,7 @@ export default function EditorView({
           <div className="mt-auto pt-8 pb-2">
             <button 
               onClick={() => {
+                if (!activeBook) return;
                 setStatus('Compiling...');
                 compileManuscript(activeBook.path).then((res) => {
                   if(res.success) {
@@ -190,7 +205,7 @@ export default function EditorView({
             </div>
           ) : isFolderView ? (
             <div className="w-full h-full flex flex-col">
-              <AssemblerView activePath={activePath} chapterName={chapterName} />
+              <AssemblerView activePath={activePath} chapterName={chapterName || ''} />
             </div>
           ) : (
             <div className="w-full flex-1 flex flex-col bg-bg-card overflow-hidden">
@@ -384,7 +399,6 @@ export default function EditorView({
             setDiffContent(null);
           }}
           onContentSelect={handleSelectHistory}
-          onVariationCreated={() => reloadTree()} // Refresh tree after duplication
         />
       )}
       

@@ -1,16 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { fetchChapterConfig, saveChapterConfig } from '../../editor/services/api';
 import { showAlert } from '../../ui/components/GlobalDialog';
 import { compileManuscript } from '../../library/services/api';
 import { Layers, GripVertical, Settings2, Trash2, Plus } from 'lucide-react';
 
-export default function AssemblerView({ activePath, chapterName }) {
-  const [config, setConfig] = useState([]);
-  const [availableFiles, setAvailableFiles] = useState([]);
+interface AssemblerViewProps {
+  activePath: string | null;
+  chapterName: string;
+}
+
+export default function AssemblerView({ activePath, chapterName }: AssemblerViewProps) {
+  const [config, setConfig] = useState<string[]>([]);
+  const [availableFiles, setAvailableFiles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   // DnD State
-  const [draggedIdx, setDraggedIdx] = useState(null);
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
 
   useEffect(() => {
     if (activePath) {
@@ -23,37 +28,37 @@ export default function AssemblerView({ activePath, chapterName }) {
     }
   }, [activePath]);
 
-  const handleSave = (newConfig) => {
+  const handleSave = (newConfig: string[]) => {
     setConfig(newConfig);
-    saveChapterConfig(activePath, newConfig);
+    if (activePath) saveChapterConfig(activePath, newConfig);
   };
 
-  const changeVariation = (index, newFile) => {
+  const changeVariation = (index: number, newFile: string) => {
     const newConfig = [...config];
     newConfig[index] = newFile;
     handleSave(newConfig);
   };
 
-  const handleRemoveBlock = (index) => {
+  const handleRemoveBlock = (index: number) => {
     const newConfig = [...config];
     newConfig.splice(index, 1);
     handleSave(newConfig);
   };
 
-  const handleAddBlock = (file) => {
+  const handleAddBlock = (file: string) => {
     handleSave([...config, file]);
   };
 
   // DnD Handlers
-  const onDragStart = (e, index) => {
+  const onDragStart = (e: React.DragEvent, index: number) => {
     setDraggedIdx(index);
     e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', index); // Firefox needs data
+    e.dataTransfer.setData('text/plain', index.toString());
   };
 
-  const onDragOver = (e) => e.preventDefault();
+  const onDragOver = (e: React.DragEvent) => e.preventDefault();
 
-  const onDrop = (e, index) => {
+  const onDrop = (e: React.DragEvent, index: number) => {
     e.preventDefault();
     if (draggedIdx === null || draggedIdx === index) return;
     const newConfig = [...config];
@@ -88,13 +93,15 @@ export default function AssemblerView({ activePath, chapterName }) {
           
           <button
             onClick={() => {
-              compileManuscript(activePath).then((res) => {
+              if (activePath) {
+                compileManuscript(activePath).then((res) => {
                 if (res.success) {
                   showAlert("Kompilasi Sukses", `Bab "${chapterName}" berhasil dikompilasi!\nDisimpan di:\n${res.compiledPath}`);
                 } else {
                   showAlert("Kompilasi Gagal", `Gagal kompilasi Bab: ${res.error}`);
                 }
               });
+              }
             }}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-card hover:bg-accent hover:text-accent-foreground text-text-main border border-border-main rounded-none text-xs font-bold font-mono uppercase transition-colors cursor-pointer"
             title="Kompilasi Draf di Bab Ini menjadi Satu File MD"

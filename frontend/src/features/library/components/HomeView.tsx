@@ -1,7 +1,15 @@
-import React from 'react';
 import { Library, Plus, Trash2, Edit2 } from 'lucide-react';
+import { LibraryNode } from './TreeNode';
 
-export default function HomeView({ tree, openBook, onOpenModal, onEditBook, onDeleteBook }) {
+interface HomeViewProps {
+  tree: LibraryNode[];
+  openBook: (book: LibraryNode) => void;
+  onOpenModal: (type: string, parentNode: LibraryNode | null) => void;
+  onEditBook: (book: LibraryNode) => void;
+  onDeleteBook: (book: LibraryNode) => void;
+}
+
+export default function HomeView({ tree, openBook, onOpenModal, onEditBook, onDeleteBook }: HomeViewProps) {
   return (
     <div className="max-w-6xl mx-auto px-6 py-16 animate-in fade-in duration-300">
       <div className="flex items-center justify-between mb-12 pb-6 border-b border-border-main">

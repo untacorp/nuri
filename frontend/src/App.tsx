@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 
@@ -11,24 +11,25 @@ import CreateModal from './features/library/components/CreateModal';
 import HomeView from './features/library/components/HomeView';
 import EditorView from './features/editor/components/EditorView';
 import GlobalDialog, { showConfirm, showPrompt } from './features/ui/components/GlobalDialog';
+import { LibraryNode } from './features/library/components/TreeNode';
 import './index.css';
 
 export default function App() {
   const [status, setStatus] = useState('Ready');
-  const [sidebarPosition, setSidebarPosition] = useState('left');
-  const [tree, setTree] = useState([]);
+  const [sidebarPosition, setSidebarPosition] = useState<'left' | 'right'>('left');
+  const [tree, setTree] = useState<LibraryNode[]>([]);
   
-  const [view, setView] = useState('home');
-  const [activeBook, setActiveBook] = useState(null);
-  const [activePath, setActivePath] = useState(null);
+  const [view, setView] = useState<'home' | 'editor'>('home');
+  const [activeBook, setActiveBook] = useState<LibraryNode | null>(null);
+  const [activePath, setActivePath] = useState<string | null>(null);
   
-  const [modalConfig, setModalConfig] = useState({ isOpen: false, type: 'book', parentNode: null });
+  const [modalConfig, setModalConfig] = useState<{ isOpen: boolean, type: string, parentNode: LibraryNode | null }>({ isOpen: false, type: 'book', parentNode: null });
   
-  const ws = useRef(null);
+  const ws = useRef<WebSocket | null>(null);
   const isUpdatingFromWs = useRef(false);
   const lastSentMarkdown = useRef('');
-  const activePathRef = useRef(null);
-  const activeBookRef = useRef(null);
+  const activePathRef = useRef<string | null>(null);
+  const activeBookRef = useRef<LibraryNode | null>(null);
 
   useEffect(() => { activePathRef.current = activePath; }, [activePath]);
   useEffect(() => { activeBookRef.current = activeBook; }, [activeBook]);
@@ -38,13 +39,13 @@ export default function App() {
       setTree(data.tree || []);
       const currentBook = activeBookRef.current;
       if (currentBook) {
-        const updatedBook = data.tree.find(b => b.path === currentBook.path);
+        const updatedBook = data.tree.find((b: LibraryNode) => b.path === currentBook.path);
         if (updatedBook) setActiveBook(updatedBook);
       }
     });
   }, []);
 
-  const loadFile = (path) => {
+  const loadFile = (path: string | null) => {
     if (!path || !path.endsWith('.md')) {
       setStatus('Ready');
       return;
@@ -53,7 +54,7 @@ export default function App() {
     fetchFile(path).then(data => {
       if (data.content !== undefined && editor) {
         isUpdatingFromWs.current = true;
-        editor.commands.setContent(parseMarkdown(data.content), false);
+        editor.commands.setContent(parseMarkdown(data.content));
         lastSentMarkdown.current = turndownService.turndown(editor.getHTML());
         setTimeout(() => isUpdatingFromWs.current = false, 100);
         setStatus('Synced');
@@ -61,7 +62,7 @@ export default function App() {
     });
   };
 
-  const saveTimeout = useRef(null);
+  const saveTimeout = useRef<any>(null);
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -104,7 +105,7 @@ export default function App() {
           const currentMarkdown = turndownService.turndown(editor.getHTML());
           if (data.content.trim() !== currentMarkdown.trim()) {
             isUpdatingFromWs.current = true;
-            editor.commands.setContent(parseMarkdown(data.content), false);
+            editor.commands.setContent(parseMarkdown(data.content));
             setTimeout(() => { isUpdatingFromWs.current = false; setStatus('Synced'); }, 100);
           } else {
             setStatus('Synced');
@@ -118,7 +119,7 @@ export default function App() {
   }, [editor, loadTree]);
 
   // Unified select handler to flush pending edits before switching files/views
-  const handleSelectPath = (newPath) => {
+  const handleSelectPath = (newPath: string | null) => {
     if (saveTimeout.current && activePath && activePath.endsWith('.md')) {
       clearTimeout(saveTimeout.current);
       saveTimeout.current = null;
@@ -148,11 +149,11 @@ export default function App() {
     loadFile(newPath);
   };
 
-  const handleCreateNode = (name, type, parentNode, customPath) => {
+  const handleCreateNode = (name: string, type: string, parentNode: LibraryNode | null, customPath?: string) => {
     createNode(type, name, parentNode?.path || '', customPath).then(() => loadTree());
   };
 
-  const handleDeleteBook = async (book) => {
+  const handleDeleteBook = async (book: LibraryNode) => {
     const confirmed = await showConfirm(
       "Hapus Buku?", 
       `Hapus buku "${book.name}" dari indeks perpustakaan?\n\n(Tenang, file fisik Markdown-nya TIDAK akan dihapus dari komputermu, hanya dihilangkan dari daftar ini)`
@@ -162,14 +163,14 @@ export default function App() {
     }
   };
 
-  const handleEditBook = async (book) => {
+  const handleEditBook = async (book: LibraryNode) => {
     const newName = await showPrompt('Ubah Judul Buku:', book.name);
     if (newName && newName.trim() && newName !== book.name) {
       updateBookName(book.path, newName.trim()).then(() => loadTree());
     }
   };
 
-  const openBook = (book) => {
+  const openBook = (book: LibraryNode) => {
     setActiveBook(book);
     setView('editor');
     setActivePath(null);
@@ -197,7 +198,7 @@ export default function App() {
     setActivePath(null);
   };
 
-  const handleOpenModal = (type, parentNode) => setModalConfig({ isOpen: true, type, parentNode });
+  const handleOpenModal = (type: string, parentNode: LibraryNode | null) => setModalConfig({ isOpen: true, type, parentNode });
 
   return (
     <div className="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen transition-colors duration-300 font-sans">
@@ -231,6 +232,7 @@ export default function App() {
           onOpenModal={handleOpenModal}
           editor={editor}
           status={status}
+          setStatus={setStatus}
           reloadTree={loadTree}
         />
       )}

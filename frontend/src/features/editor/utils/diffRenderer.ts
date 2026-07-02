@@ -1,7 +1,7 @@
 import { diffWordsWithSpace } from 'diff';
 import { marked } from 'marked';
 
-export const generateDiffHtml = (oldText, newText) => {
+export const generateDiffHtml = (oldText: string | null | undefined, newText: string | null | undefined) => {
   const diff = diffWordsWithSpace(oldText || '', newText || '');
   let diffMarkdown = '';
   

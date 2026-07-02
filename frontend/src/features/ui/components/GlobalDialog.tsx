@@ -1,36 +1,50 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
-export const showPrompt = (title, defaultValue = '') => {
+export interface DialogDetail {
+  type: 'prompt' | 'confirm' | 'alert';
+  title: string;
+  defaultValue?: string;
+  message?: string;
+  resolve: (value: any) => void;
+}
+
+declare global {
+  interface WindowEventMap {
+    'global-dialog': CustomEvent<DialogDetail>;
+  }
+}
+
+export const showPrompt = (title: string, defaultValue = ''): Promise<string | null> => {
   return new Promise((resolve) => {
-    window.dispatchEvent(new CustomEvent('global-dialog', {
+    window.dispatchEvent(new CustomEvent<DialogDetail>('global-dialog', {
       detail: { type: 'prompt', title, defaultValue, resolve }
     }));
   });
 };
 
-export const showConfirm = (title, message = '') => {
+export const showConfirm = (title: string, message = ''): Promise<boolean> => {
   return new Promise((resolve) => {
-    window.dispatchEvent(new CustomEvent('global-dialog', {
+    window.dispatchEvent(new CustomEvent<DialogDetail>('global-dialog', {
       detail: { type: 'confirm', title, message, resolve }
     }));
   });
 };
 
-export const showAlert = (title, message = '') => {
+export const showAlert = (title: string, message = ''): Promise<boolean> => {
   return new Promise((resolve) => {
-    window.dispatchEvent(new CustomEvent('global-dialog', {
+    window.dispatchEvent(new CustomEvent<DialogDetail>('global-dialog', {
       detail: { type: 'alert', title, message, resolve }
     }));
   });
 };
 
 export default function GlobalDialog() {
-  const [dialog, setDialog] = useState(null);
+  const [dialog, setDialog] = useState<DialogDetail | null>(null);
   const [inputValue, setInputValue] = useState('');
 
   useEffect(() => {
-    const handleDialog = (e) => {
+    const handleDialog = (e: CustomEvent<DialogDetail>) => {
       setDialog(e.detail);
       setInputValue(e.detail.defaultValue || '');
     };
@@ -55,7 +69,7 @@ export default function GlobalDialog() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in duration-200">
       <div className="bg-bg-card rounded-none w-full max-w-md overflow-hidden border-2 border-border-main scale-100 transition-transform shadow-2xl">
         <div className="px-6 py-5 border-b border-border-main flex justify-between items-center">
           <div>

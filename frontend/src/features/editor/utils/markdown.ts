@@ -6,4 +6,4 @@ export const turndownService = new TurndownService({
   bulletListMarker: '-',
 });
 
-export const parseMarkdown = (content) => marked.parse(content);
+export const parseMarkdown = (content: string) => marked.parse(content);

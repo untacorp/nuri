@@ -1,7 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { LibraryNode } from './TreeNode';
 
-export default function CreateModal({ isOpen, type, parentNode, onClose, onSubmit }) {
+interface CreateModalProps {
+  isOpen: boolean;
+  type: string;
+  parentNode: LibraryNode | null;
+  onClose: () => void;
+  onSubmit: (name: string, type: string, parentNode: LibraryNode | null, customPath?: string) => void;
+}
+
+export default function CreateModal({ isOpen, type, parentNode, onClose, onSubmit }: CreateModalProps) {
   const [name, setName] = useState('');
   const [customPath, setCustomPath] = useState('');
   

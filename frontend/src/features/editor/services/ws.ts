@@ -1,6 +1,6 @@
 import { WS_URL } from '../../../config/env';
 
-export const createWebSocketConnection = (onMessage) => {
+export const createWebSocketConnection = (onMessage: (data: any) => void) => {
   const ws = new WebSocket(WS_URL);
   ws.onmessage = (event) => {
     try {
