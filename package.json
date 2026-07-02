@@ -1,0 +1,9 @@
+{
+  "name": "author-app",
+  "private": true,
+  "scripts": {
+    "dev:frontend": "pnpm --filter frontend dev",
+    "dev:backend": "pnpm --filter backend dev",
+    "dev": "pnpm --filter frontend dev & pnpm --filter backend dev"
+  }
+}

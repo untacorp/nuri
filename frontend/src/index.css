@@ -1,0 +1,87 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+:root {
+  --bg-main: #fafafa;         /* zinc-50 */
+  --bg-card: #ffffff;         /* white */
+  --bg-input: #f4f4f5;        /* zinc-100 */
+  --border-main: #e4e4e7;     /* zinc-200 */
+  --border-hover: #a1a1aa;    /* zinc-400 */
+  --text-main: #18181b;       /* zinc-900 */
+  --text-muted: #71717a;      /* zinc-500 */
+  
+  --accent: #18181b;          /* zinc-900 */
+  --accent-foreground: #fafafa; /* zinc-50 */
+  --accent-hover: #27272a;    /* zinc-800 */
+
+  --diff-added-bg: #d4edda;    /* Soft green background */
+  --diff-added-text: #155724;  /* Dark green text */
+  --diff-removed-bg: #f8d7da;  /* Soft red background */
+  --diff-removed-text: #721c24; /* Dark red text */
+}
+
+.dark {
+  --bg-main: #09090b;         /* zinc-950 */
+  --bg-card: #18181b;         /* zinc-900 */
+  --bg-input: #09090b;        /* zinc-950 */
+  --border-main: #27272a;     /* zinc-800 */
+  --border-hover: #52525b;    /* zinc-600 */
+  --text-main: #fafafa;       /* zinc-50 */
+  --text-muted: #a1a1aa;      /* zinc-400 */
+  
+  --accent: #fafafa;          /* zinc-50 */
+  --accent-foreground: #09090b; /* zinc-950 */
+  --accent-hover: #e4e4e7;    /* zinc-200 */
+
+  --diff-added-bg: rgba(40, 167, 69, 0.15);
+  --diff-added-text: #81c784;
+  --diff-removed-bg: rgba(220, 53, 69, 0.15);
+  --diff-removed-text: #e57373;
+}
+
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --font-serif: "Lora", serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  
+  --color-bg-main: var(--bg-main);
+  --color-bg-card: var(--bg-card);
+  --color-bg-input: var(--bg-input);
+  --color-border-main: var(--border-main);
+  --color-border-hover: var(--border-hover);
+  --color-text-main: var(--text-main);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-hover: var(--accent-hover);
+
+  --color-diff-added-bg: var(--diff-added-bg);
+  --color-diff-added-text: var(--diff-added-text);
+  --color-diff-removed-bg: var(--diff-removed-bg);
+  --color-diff-removed-text: var(--diff-removed-text);
+}
+
+body {
+  @apply bg-bg-main text-text-main font-sans antialiased transition-colors duration-300;
+}
+
+/* TipTap Editor Styles overrides to match typography */
+.ProseMirror {
+  @apply outline-none min-h-full prose prose-zinc dark:prose-invert max-w-none prose-h1:font-sans prose-h2:font-sans prose-headings:font-semibold;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.ProseMirror p {
+  @apply leading-relaxed mb-4;
+}
+
+.ProseMirror h1 {
+  @apply text-4xl mb-6 tracking-tight;
+}
+
+.ProseMirror h2 {
+  @apply text-2xl mt-8 mb-4;
+}
+
