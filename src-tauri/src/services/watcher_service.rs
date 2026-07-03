@@ -94,7 +94,7 @@ pub fn init_watcher(app: AppHandle) {
 
 pub fn watch_new_path(app: &AppHandle, path: &str) {
     let state = app.state::<Arc<Mutex<WatcherState>>>();
-    if let Ok(mut lock) = state.lock() {
+    if let Ok(mut lock) = state.inner().lock() {
         if let Some(watcher) = &mut lock.watcher {
             let p = std::path::Path::new(path);
             if p.exists() {

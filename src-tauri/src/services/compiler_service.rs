@@ -1,6 +1,6 @@
 use tauri::AppHandle;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use serde::Serialize;
 use crate::services::library_service::get_library;
 
@@ -31,7 +31,7 @@ fn get_parts_to_include(chapter_path: &Path) -> Vec<String> {
             if name.starts_with('.') { continue; }
             if entry.path().is_dir() {
                 subdirs.push(name);
-            } else if name.ends_with(".md") && name != "chapter.json" && name != "assembly.json" {
+            } else if name.to_lowercase().ends_with(".md") && name != "chapter.json" && name != "assembly.json" {
                 files.push(name);
             }
         }
@@ -46,7 +46,7 @@ fn get_parts_to_include(chapter_path: &Path) -> Vec<String> {
                 let mut md = Vec::new();
                 for entry in items.filter_map(Result::ok) {
                     let f = entry.file_name().to_string_lossy().to_string();
-                    if f.ends_with(".md") { md.push(f); }
+                    if f.to_lowercase().ends_with(".md") { md.push(f); }
                 }
                 md.sort();
                 if !md.is_empty() {
@@ -84,14 +84,14 @@ pub fn fetch_chapter_config(app: AppHandle, path: String) -> Result<ChapterConfi
         if name.starts_with('.') { continue; }
         if entry.path().is_dir() {
             subdirs.push(name);
-        } else if name.ends_with(".md") && name != "chapter.json" && name != "assembly.json" {
+        } else if name.to_lowercase().ends_with(".md") && name != "chapter.json" && name != "assembly.json" {
             files.push(name);
         }
     }
     
     if is_book {
         subdirs.sort();
-        available_files = subdirs.clone();
+        available_files.clone_from(&subdirs);
         default_config = subdirs;
     } else if !subdirs.is_empty() {
         subdirs.sort();
@@ -101,7 +101,7 @@ pub fn fetch_chapter_config(app: AppHandle, path: String) -> Result<ChapterConfi
                 let mut md_files = Vec::new();
                 for entry in subdir_items.filter_map(Result::ok) {
                     let f = entry.file_name().to_string_lossy().to_string();
-                    if f.ends_with(".md") {
+                    if f.to_lowercase().ends_with(".md") {
                         md_files.push(f);
                     }
                 }
@@ -116,7 +116,7 @@ pub fn fetch_chapter_config(app: AppHandle, path: String) -> Result<ChapterConfi
         }
     } else {
         files.sort();
-        available_files = files.clone();
+        available_files.clone_from(&files);
         default_config = files;
     }
     
@@ -168,7 +168,8 @@ pub fn compile_manuscript(app: AppHandle, path: String) -> Result<String, String
     
     let lib = get_library(app)?;
     let is_book = lib.iter().any(|b| b.path == path);
-    let mut compiled_text = format!("# {}\n\n", target_path.file_name().unwrap().to_string_lossy());
+    let mut compiled_text = String::with_capacity(1024 * 1024); // Pre-allocate 1MB for the manuscript
+    compiled_text.push_str(&format!("# {}\n\n", target_path.file_name().unwrap().to_string_lossy()));
     
     if is_book {
         let mut chapters_to_include = Vec::new();
@@ -198,7 +199,8 @@ pub fn compile_manuscript(app: AppHandle, path: String) -> Result<String, String
         
         for chapter in chapters_to_include {
             let chapter_path = target_path.join(&chapter);
-            compiled_text.push_str(&format!("## {}\n\n", chapter));
+            use std::fmt::Write;
+            let _ = write!(compiled_text, "## {chapter}\n\n");
             
             let parts_to_include = get_parts_to_include(&chapter_path);
             append_parts_to_manuscript(&mut compiled_text, &chapter_path, parts_to_include);
@@ -208,7 +210,7 @@ pub fn compile_manuscript(app: AppHandle, path: String) -> Result<String, String
         append_parts_to_manuscript(&mut compiled_text, target_path, parts_to_include);
     }
     
-    let out_name = format!("Kompilasi_{}.md", target_path.file_name().unwrap().to_string_lossy().replace(" ", "_"));
+    let out_name = format!("Kompilasi_{}.md", target_path.file_name().unwrap().to_string_lossy().replace(' ', "_"));
     let out_path = target_path.join(out_name);
     fs::write(&out_path, compiled_text).map_err(|e| e.to_string())?;
     

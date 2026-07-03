@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { PanelRightClose, PanelLeftClose, ArrowLeftRight, Clock, FileText, Activity } from 'lucide-react';
 import TimeMachineView from './TimeMachineView';
 import WordFrequencyView from './WordFrequencyView';

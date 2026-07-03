@@ -6,18 +6,24 @@ const STOP_WORDS = new Set(stopWordsData);
 export function useWordFrequency(editor: any, activePath: string | null) {
   const [text, setText] = useState('');
 
-  // Update whenever editor content changes
   useEffect(() => {
     if (!editor) return;
     
+    let timeoutId: any;
+    
     const updateText = () => {
-      setText(editor.getText());
+      // Debounce the heavy text extraction and state update by 1 second
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setText(editor.getText());
+      }, 1000);
     };
     
     editor.on('transaction', updateText);
-    updateText(); // initial load
+    setText(editor.getText()); // initial load
     
     return () => {
+      clearTimeout(timeoutId);
       editor.off('transaction', updateText);
     };
   }, [editor, activePath]);
