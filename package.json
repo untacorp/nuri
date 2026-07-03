@@ -12,6 +12,7 @@
   "dependencies": {
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.1",
+    "@tiptap/core": "^3.27.1",
     "@tiptap/extension-mathematics": "^3.27.1",
     "@tiptap/pm": "^3.27.1",
     "@tiptap/react": "^3.27.1",

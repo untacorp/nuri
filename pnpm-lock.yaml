@@ -14,6 +14,9 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.3.1
         version: 4.3.1(vite@8.1.1(@types/node@26.1.0)(jiti@2.7.0))
+      '@tiptap/core':
+        specifier: ^3.27.1
+        version: 3.27.1(@tiptap/pm@3.27.1)
       '@tiptap/extension-mathematics':
         specifier: ^3.27.1
         version: 3.27.1(@tiptap/core@3.27.1(@tiptap/pm@3.27.1))(@tiptap/pm@3.27.1)(katex@0.17.0)

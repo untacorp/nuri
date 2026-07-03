@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
 export interface DialogDetail {
-  type: 'prompt' | 'confirm' | 'alert';
+  type: 'prompt' | 'confirm' | 'alert' | 'mathPrompt';
   title: string;
   defaultValue?: string;
   message?: string;
@@ -19,6 +19,14 @@ export const showPrompt = (title: string, defaultValue = ''): Promise<string | n
   return new Promise((resolve) => {
     window.dispatchEvent(new CustomEvent<DialogDetail>('global-dialog', {
       detail: { type: 'prompt', title, defaultValue, resolve }
+    }));
+  });
+};
+
+export const showMathPrompt = (title: string, defaultValue = ''): Promise<{ latex: string; isBlock: boolean } | null> => {
+  return new Promise((resolve) => {
+    window.dispatchEvent(new CustomEvent<DialogDetail>('global-dialog', {
+      detail: { type: 'mathPrompt', title, defaultValue, resolve }
     }));
   });
 };
@@ -42,11 +50,13 @@ export const showAlert = (title: string, message = ''): Promise<boolean> => {
 export default function GlobalDialog() {
   const [dialog, setDialog] = useState<DialogDetail | null>(null);
   const [inputValue, setInputValue] = useState('');
+  const [isBlockMath, setIsBlockMath] = useState(false);
 
   useEffect(() => {
     const handleDialog = (e: CustomEvent<DialogDetail>) => {
       setDialog(e.detail);
       setInputValue(e.detail.defaultValue || '');
+      setIsBlockMath(false);
     };
     window.addEventListener('global-dialog', handleDialog);
     return () => window.removeEventListener('global-dialog', handleDialog);
@@ -55,13 +65,15 @@ export default function GlobalDialog() {
   if (!dialog) return null;
 
   const handleClose = () => {
-    dialog.resolve(dialog.type === 'prompt' ? null : false);
+    dialog.resolve(null);
     setDialog(null);
   };
 
   const handleConfirm = () => {
     if (dialog.type === 'prompt') {
       dialog.resolve(inputValue);
+    } else if (dialog.type === 'mathPrompt') {
+      dialog.resolve({ latex: inputValue, isBlock: isBlockMath });
     } else {
       dialog.resolve(true);
     }
@@ -95,6 +107,28 @@ export default function GlobalDialog() {
               onKeyDown={(e) => { if (e.key === 'Enter') handleConfirm(); }}
               className="w-full bg-bg-input border border-border-main rounded-none px-4 py-3 text-text-main focus:outline-none focus:border-text-main transition-colors font-mono text-sm"
             />
+          )}
+          {dialog.type === 'mathPrompt' && (
+            <div className="flex flex-col gap-4">
+              <input 
+                autoFocus
+                type="text" 
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleConfirm(); }}
+                placeholder="Masukkan rumus LaTeX (contoh: E = mc^2)"
+                className="w-full bg-bg-input border border-border-main rounded-none px-4 py-3 text-text-main focus:outline-none focus:border-text-main transition-colors font-mono text-sm"
+              />
+              <label className="flex items-center gap-2 text-xs font-mono text-text-muted cursor-pointer select-none">
+                <input 
+                  type="checkbox" 
+                  checked={isBlockMath}
+                  onChange={(e) => setIsBlockMath(e.target.checked)}
+                  className="rounded-none border-border-main bg-bg-input focus:ring-0 cursor-pointer"
+                />
+                Tampilkan di baris baru (Block Math)
+              </label>
+            </div>
           )}
         </div>
         

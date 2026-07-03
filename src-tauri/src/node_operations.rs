@@ -6,7 +6,17 @@ use crate::git_service::git_commit;
 use crate::library_service::get_library;
 
 #[tauri::command]
-pub fn create_node(app: AppHandle, node_type: String, name: String, parent_path: String, custom_path: Option<String>) -> Result<bool, String> {
+pub fn create_node(
+    app: AppHandle, 
+    node_type: String, 
+    name: String, 
+    parent_path: String, 
+    custom_path: Option<String>,
+    description: Option<String>,
+    cover_image: Option<String>,
+    auto_compile: Option<bool>,
+    disabled_chapters: Option<Vec<String>>
+) -> Result<bool, String> {
     let target_path = if node_type == "book" {
         custom_path.ok_or("Absolute path required for new book")?
     } else if node_type == "version" {
@@ -24,7 +34,15 @@ pub fn create_node(app: AppHandle, node_type: String, name: String, parent_path:
         }
 
     if node_type == "book" {
-        save_book_to_library(app.clone(), name.clone(), target_path.clone())?;
+        save_book_to_library(
+            app.clone(), 
+            name.clone(), 
+            target_path.clone(), 
+            description, 
+            cover_image,
+            auto_compile,
+            disabled_chapters
+        )?;
         git_commit(&target_path, "Initial commit: Membuat buku baru");
     } else if node_type == "chapter" || node_type == "part" || node_type == "version" {
         if node_type == "version" {

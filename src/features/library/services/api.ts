@@ -5,8 +5,8 @@ export const fetchTree = async (): Promise<{ tree: LibraryNode[] }> => {
   return await invoke<{ tree: LibraryNode[] }>('fetch_tree');
 };
 
-export const createNode = async (type: string, name: string, parentPath: string, customPath?: string) => {
-  await invoke('create_node', { nodeType: type, name, parentPath, customPath });
+export const createNode = async (type: string, name: string, parentPath: string, customPath?: string, description?: string, coverImage?: string, autoCompile?: boolean | null, disabledChapters?: string[]) => {
+  await invoke('create_node', { nodeType: type, name, parentPath, customPath, description, coverImage, autoCompile, disabledChapters });
   return { success: true };
 };
 
@@ -15,8 +15,8 @@ export const deleteBook = async (path: string) => {
   return { success: true };
 };
 
-export const updateBookName = async (path: string, name: string) => {
-  await invoke('update_book_in_library', { absolutePath: path, newName: name });
+export const updateBook = async (path: string, name: string, description?: string, coverImage?: string, autoCompile?: boolean | null, disabledChapters?: string[]) => {
+  await invoke('update_book_in_library', { absolutePath: path, newName: name, newDescription: description, newCoverImage: coverImage, newAutoCompile: autoCompile, newDisabledChapters: disabledChapters });
   return { success: true };
 };
 

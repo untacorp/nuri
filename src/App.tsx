@@ -1,20 +1,34 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useEditor } from '@tiptap/react';
+import { Extension, textInputRule } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import { Mathematics } from '@tiptap/extension-mathematics';
 import 'katex/dist/katex.min.css';
 
-import { fetchTree, createNode, deleteBook, updateBookName } from '~/features/library/services/api';
+import { fetchTree, createNode, deleteBook, updateBook, compileManuscript } from '~/features/library/services/api';
 import { fetchFile, saveFile } from '~/features/editor/services/api';
 import { turndownService, parseMarkdown } from '~/features/editor/utils/markdown';
 
 import CreateModal from '~/features/library/components/CreateModal';
 import HomeView from '~/features/library/components/HomeView';
 import EditorView from '~/features/editor/components/EditorView';
+import SettingsModal from '~/features/library/components/SettingsModal';
 import GlobalDialog, { showConfirm, showPrompt } from '~/features/ui/components/GlobalDialog';
 import { LibraryNode } from '~/features/library/components/TreeNode';
 import { listen } from '@tauri-apps/api/event';
 import './index.css';
+
+const EmDash = Extension.create({
+  name: 'emDash',
+  addInputRules() {
+    return [
+      textInputRule({
+        find: /---$/,
+        replace: '—',
+      }),
+    ];
+  },
+});
 
 export default function App() {
   const [status, setStatus] = useState('Ready');
@@ -23,8 +37,14 @@ export default function App() {
   const [view, setView] = useState<'home' | 'editor'>('home');
   const [activeBook, setActiveBook] = useState<LibraryNode | null>(null);
   const [activePath, setActivePath] = useState<string | null>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
-  const [modalConfig, setModalConfig] = useState<{ isOpen: boolean, type: string, parentNode: LibraryNode | null }>({ isOpen: false, type: 'book', parentNode: null });
+  const [modalConfig, setModalConfig] = useState<{ 
+    isOpen: boolean, 
+    type: string, 
+    parentNode: LibraryNode | null,
+    editNode?: LibraryNode | null 
+  }>({ isOpen: false, type: 'book', parentNode: null, editNode: null });
   
   const isUpdatingFromWs = useRef(false);
   const lastSentMarkdown = useRef('');
@@ -62,11 +82,54 @@ export default function App() {
     });
   };
 
+  const autoCompileIfEnabled = (filePath: string) => {
+    const book = activeBookRef.current;
+    if (!book) return;
+
+    const globalDefault = localStorage.getItem('nuri_auto_compile_default') === 'true';
+    const bookSetting = book.auto_compile;
+    const isAutoCompileEnabled = bookSetting !== undefined && bookSetting !== null ? bookSetting : globalDefault;
+
+    if (!isAutoCompileEnabled) return;
+
+    const bookPath = book.path.replace(/\/+$/, ''); // Remove trailing slash
+    const normalizedFilePath = filePath.replace(/\\/g, '/');
+    const normalizedBookPath = bookPath.replace(/\\/g, '/');
+
+    if (!normalizedFilePath.startsWith(normalizedBookPath)) return;
+    const relative = normalizedFilePath.slice(normalizedBookPath.length);
+    const parts = relative.split('/').filter(Boolean);
+    if (parts.length === 0) return;
+
+    const chapterPath = `${normalizedBookPath}/${parts[0]}`;
+    
+    const normalizedChapterPath = chapterPath.replace(/\/+/g, '/');
+    const normalizedDisabledList = (book.disabled_chapters || []).map(p => p.replace(/\\/g, '/').replace(/\/+/g, '/'));
+
+    const isDisabled = normalizedDisabledList.includes(normalizedChapterPath);
+
+    if (!isDisabled) {
+      console.log(`Auto-compiling chapter: ${normalizedChapterPath} and book: ${normalizedBookPath}`);
+      compileManuscript(normalizedChapterPath)
+        .then(res => {
+          if (!res.success) console.error("Auto-compile chapter failed:", res.error);
+        })
+        .catch(err => console.error("Auto-compile chapter error:", err));
+
+      compileManuscript(normalizedBookPath)
+        .then(res => {
+          if (!res.success) console.error("Auto-compile book failed:", res.error);
+        })
+        .catch(err => console.error("Auto-compile book error:", err));
+    }
+  };
+
   const saveTimeout = useRef<any>(null);
 
   const editor = useEditor({
     extensions: [
       StarterKit,
+      EmDash,
       Mathematics.configure({
         inlineOptions: {
           onClick: (node, pos) => {
@@ -118,7 +181,10 @@ export default function App() {
         
         lastSentMarkdown.current = markdown;
         saveFile(currentPath, markdown)
-          .then(() => setStatus('Synced'))
+          .then(() => {
+            setStatus('Synced');
+            autoCompileIfEnabled(currentPath);
+          })
           .catch((err) => {
             console.error(err);
             setStatus('Error');
@@ -179,6 +245,7 @@ export default function App() {
         saveFile(activePath, markdown)
           .then(() => {
             setStatus('Synced');
+            autoCompileIfEnabled(activePath);
             setActivePath(newPath);
             loadFile(newPath);
           })
@@ -195,8 +262,12 @@ export default function App() {
     loadFile(newPath);
   };
 
-  const handleCreateNode = (name: string, type: string, parentNode: LibraryNode | null, customPath?: string) => {
-    createNode(type, name, parentNode?.path || '', customPath).then(() => loadTree());
+  const handleCreateNode = (name: string, type: string, parentNode: LibraryNode | null, customPath?: string, description?: string, coverImage?: string, autoCompile?: boolean | null) => {
+    if (type === 'edit-book' && modalConfig.editNode) {
+      updateBook(modalConfig.editNode.path, name, description, coverImage, autoCompile, modalConfig.editNode.disabled_chapters).then(() => loadTree());
+    } else {
+      createNode(type, name, parentNode?.path || '', customPath, description, coverImage, autoCompile).then(() => loadTree());
+    }
   };
 
   const handleDeleteBook = async (book: LibraryNode) => {
@@ -209,11 +280,13 @@ export default function App() {
     }
   };
 
-  const handleEditBook = async (book: LibraryNode) => {
-    const newName = await showPrompt('Ubah Judul Buku:', book.name);
-    if (newName && newName.trim() && newName !== book.name) {
-      updateBookName(book.path, newName.trim()).then(() => loadTree());
-    }
+  const handleEditBook = (book: LibraryNode) => {
+    setModalConfig({
+      isOpen: true,
+      type: 'edit-book',
+      parentNode: null,
+      editNode: book
+    });
   };
 
   const openBook = (book: LibraryNode) => {
@@ -235,7 +308,10 @@ export default function App() {
         setStatus('Saving...');
         lastSentMarkdown.current = markdown;
         saveFile(activePath, markdown)
-          .then(() => setStatus('Synced'))
+          .then(() => {
+            setStatus('Synced');
+            autoCompileIfEnabled(activePath);
+          })
           .catch(() => setStatus('Error'));
       }
     }
@@ -253,8 +329,14 @@ export default function App() {
         isOpen={modalConfig.isOpen} 
         type={modalConfig.type} 
         parentNode={modalConfig.parentNode} 
+        editNode={modalConfig.editNode}
         onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
         onSubmit={handleCreateNode}
+      />
+
+      <SettingsModal 
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
       />
 
       {view === 'home' && (
@@ -264,6 +346,7 @@ export default function App() {
           onOpenModal={handleOpenModal} 
           onEditBook={handleEditBook}
           onDeleteBook={handleDeleteBook}
+          onOpenSettings={() => setIsSettingsOpen(true)}
         />
       )}
 
@@ -278,6 +361,7 @@ export default function App() {
           status={status}
           setStatus={setStatus}
           reloadTree={loadTree}
+          onAutoCompile={autoCompileIfEnabled}
         />
       )}
     </div>

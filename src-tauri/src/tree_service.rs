@@ -12,6 +12,14 @@ pub struct TreeNode {
     path: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     children: Option<Vec<TreeNode>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    cover_image: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    auto_compile: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    disabled_chapters: Option<Vec<String>>,
 }
 
 fn build_tree(dir_path: &Path, depth: usize) -> Vec<TreeNode> {
@@ -20,30 +28,20 @@ fn build_tree(dir_path: &Path, depth: usize) -> Vec<TreeNode> {
         return tree;
     }
     
-    let mut entries = match fs::read_dir(dir_path) {
-        Ok(e) => e.filter_map(Result::ok).collect::<Vec<_>>(),
+    let entries = match fs::read_dir(dir_path) {
+        Ok(e) => e,
         Err(_) => return tree,
     };
     
-    entries.sort_by(|a, b| {
-        let a_is_dir = a.path().is_dir();
-        let b_is_dir = b.path().is_dir();
-        if a_is_dir && !b_is_dir {
-            std::cmp::Ordering::Less
-        } else if !a_is_dir && b_is_dir {
-            std::cmp::Ordering::Greater
-        } else {
-            a.file_name().cmp(&b.file_name())
-        }
-    });
-
-    for entry in entries {
+    for entry in entries.filter_map(Result::ok) {
+        let full_path = entry.path();
         let file_name = entry.file_name().to_string_lossy().to_string();
+        
         if file_name.starts_with('.') {
             continue;
         }
-        let full_path = entry.path();
-        let path_str = full_path.to_string_lossy().to_string();
+        
+        let path_str = full_path.to_string_lossy().replace("\\", "/");
         
         if full_path.is_dir() {
             let node_type = if depth == 1 {
@@ -59,6 +57,10 @@ fn build_tree(dir_path: &Path, depth: usize) -> Vec<TreeNode> {
                 node_type: node_type.to_string(),
                 path: path_str,
                 children: Some(build_tree(&full_path, depth + 1)),
+                description: None,
+                cover_image: None,
+                auto_compile: None,
+                disabled_chapters: None,
             });
         } else if full_path.is_file() && file_name.ends_with(".md") {
             if file_name == "chapter.json" || file_name == "assembly.json" {
@@ -75,6 +77,10 @@ fn build_tree(dir_path: &Path, depth: usize) -> Vec<TreeNode> {
                 node_type: node_type.to_string(),
                 path: path_str,
                 children: None,
+                description: None,
+                cover_image: None,
+                auto_compile: None,
+                disabled_chapters: None,
             });
         }
     }
@@ -100,6 +106,10 @@ pub fn fetch_tree(app: AppHandle) -> Result<TreeResponse, String> {
                 node_type: "book".to_string(),
                 path: book.path.clone(),
                 children: Some(build_tree(path, 0)),
+                description: book.description,
+                cover_image: book.cover_image,
+                auto_compile: book.auto_compile,
+                disabled_chapters: book.disabled_chapters,
             });
         }
     }

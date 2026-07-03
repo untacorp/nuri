@@ -194,9 +194,67 @@ pub fn compile_manuscript(app: AppHandle, path: String) -> Result<String, String
                 }
             }
         }
+    } else {
+        let assembly_path = target_path.join("assembly.json");
+        let legacy_path = target_path.join("chapter.json");
+        let config_path = if assembly_path.exists() { assembly_path } else { legacy_path };
+        
+        let mut parts_to_include = Vec::new();
+        if config_path.exists() {
+            if let Ok(content) = fs::read_to_string(config_path) {
+                if let Ok(parsed) = serde_json::from_str::<Vec<String>>(&content) {
+                    parts_to_include = parsed;
+                }
+            }
+        } else {
+            let mut subdirs = Vec::new();
+            let mut files = Vec::new();
+            if let Ok(items) = fs::read_dir(target_path) {
+                for entry in items.filter_map(Result::ok) {
+                    let name = entry.file_name().to_string_lossy().to_string();
+                    if name.starts_with('.') { continue; }
+                    if entry.path().is_dir() {
+                        subdirs.push(name);
+                    } else if name.ends_with(".md") && name != "chapter.json" && name != "assembly.json" {
+                        files.push(name);
+                    }
+                }
+            }
+            
+            if !subdirs.is_empty() {
+                subdirs.sort();
+                for subdir in subdirs {
+                    let subdir_path = target_path.join(&subdir);
+                    if let Ok(items) = fs::read_dir(&subdir_path) {
+                        let mut md = Vec::new();
+                        for entry in items.filter_map(Result::ok) {
+                            let f = entry.file_name().to_string_lossy().to_string();
+                            if f.ends_with(".md") { md.push(f); }
+                        }
+                        md.sort();
+                        if !md.is_empty() {
+                            parts_to_include.push(format!("{}/{}", subdir, md[0]));
+                        }
+                    }
+                }
+            } else {
+                files.sort();
+                parts_to_include = files;
+            }
+        }
+        
+        for part in parts_to_include {
+            let part_path = target_path.join(part);
+            if part_path.exists() {
+                if let Ok(content) = fs::read_to_string(part_path) {
+                    compiled_text.push_str(&content);
+                    compiled_text.push_str("\n\n");
+                }
+            }
+        }
     }
     
-    let out_name = format!("Manuscript_{}.md", target_path.file_name().unwrap().to_string_lossy().replace(" ", "_"));
+    let out_name = format!("Kompilasi_{}.md", target_path.file_name().unwrap().to_string_lossy().replace(" ", "_"));
     let out_path = target_path.join(out_name);
     fs::write(&out_path, compiled_text).map_err(|e| e.to_string())?;
     

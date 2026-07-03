@@ -44,6 +44,7 @@ export default function LibraryContent({
     setContextMenu({ x: e.clientX, y: e.clientY, node });
   };
 
+
   const handleRename = async (node: LibraryNode) => {
     const newName = await showPrompt(`Ubah nama "${node.name}" menjadi:`, node.name);
     if (newName && newName !== node.name) {
@@ -75,10 +76,10 @@ export default function LibraryContent({
     setStatus('Compiling...');
     const res = await compileManuscript(activeBook.path);
     if (res.success) {
-      showAlert("Kompilasi Sukses", `Buku berhasil dikompilasi!\nDisimpan di:\n${res.compiledPath}`);
+      showAlert("Kompilasi Sukses", `Dokumen berhasil dikompilasi!\nDisimpan di:\n${res.compiledPath}`);
       setStatus('Ready');
     } else {
-      showAlert("Kompilasi Gagal", `Gagal kompilasi buku: ${res.error}`);
+      showAlert("Kompilasi Gagal", `Gagal kompilasi dokumen: ${res.error}`);
       setStatus('Error');
     }
   };
@@ -106,7 +107,7 @@ export default function LibraryContent({
       {/* Content Area */}
       <div className="flex-1 overflow-y-auto flex flex-col min-h-0">
         <div className="flex justify-between items-center p-3 shrink-0">
-          <span className="text-[10px] font-bold tracking-widest text-text-muted font-mono uppercase">Draf Naskah</span>
+          <span className="text-[10px] font-bold tracking-widest text-text-muted font-mono uppercase">Draf Dokumen</span>
           <button onClick={() => onOpenModal('chapter', activeBook)} className="p-1 rounded-none border border-transparent hover:border-border-main hover:bg-bg-input text-text-muted hover:text-text-main transition-colors" title="Bab Baru">
             <Plus size={14} />
           </button>
@@ -127,7 +128,7 @@ export default function LibraryContent({
             />
           ))}
           {(!activeBook?.children || activeBook.children.length === 0) && (
-            <div className="text-xs text-text-muted text-center mt-6 p-4 border border-dashed border-border-main rounded-none font-mono">Belum ada draf.<br/>Klik tombol + untuk menambah Bab.</div>
+            <div className="text-xs text-text-muted text-center mt-6 p-4 border border-dashed border-border-main rounded-none font-mono">Belum ada draf.<br/>Klik tombol + untuk menambah Dokumen.</div>
           )}
         </div>
         
@@ -136,7 +137,7 @@ export default function LibraryContent({
             onClick={handleCompileBook}
             className="w-full flex items-center justify-center gap-2 py-2.5 bg-accent text-accent-foreground border border-accent rounded-none text-xs font-bold tracking-wider hover:bg-accent-hover hover:border-accent-hover transition-colors font-mono"
           >
-            Compile Manuscript
+            Kompilasi Dokumen
           </button>
         </div>
       </div>
@@ -147,6 +148,7 @@ export default function LibraryContent({
           style={{ top: contextMenu.y, left: contextMenu.x }}
           onClick={(e) => e.stopPropagation()}
         >
+
           <button 
             onClick={() => { handleRename(contextMenu.node); setContextMenu(null); }}
             className="w-full text-left px-4 py-2 hover:bg-bg-input text-text-main flex items-center gap-2 cursor-pointer font-bold rounded-none"

@@ -65,13 +65,7 @@ body {
   @apply bg-bg-main text-text-main font-sans antialiased transition-colors duration-300;
 }
 
-/* Fix misalignment between lucide icons and text in flex containers */
-.flex.items-center {
-  line-height: 1;
-}
-.flex.items-center svg.lucide {
-  transform: translateY(-1.2px);
-}
+/* Lucide icons and text vertical alignment are handled globally in the bottom section */
 
 /* TipTap Editor Styles overrides to match typography */
 .ProseMirror {
@@ -81,16 +75,27 @@ body {
   flex: 1;
 }
 
+.ProseMirror-selectednode {
+  outline: none !important;
+  @apply opacity-65 bg-zinc-100/50 dark:bg-zinc-800/50;
+}
+
 .ProseMirror p {
-  @apply leading-relaxed mb-4;
+  line-height: 1.55 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0.5rem !important;
 }
 
 .ProseMirror h1 {
-  @apply text-4xl mb-6 tracking-tight;
+  @apply text-3xl tracking-tight;
+  margin-top: 1.5rem !important;
+  margin-bottom: 0.75rem !important;
 }
 
 .ProseMirror h2 {
-  @apply text-2xl mt-8 mb-4;
+  @apply text-xl;
+  margin-top: 1.25rem !important;
+  margin-bottom: 0.5rem !important;
 }
 
 /* Tiptap Mathematics extension styles */
@@ -125,3 +130,30 @@ body {
   font-size: 0.875rem;
 }
 
+/* ==========================================================================
+   Global Baseline Alignment Correction
+   ========================================================================== */
+
+/* Fix misalignment by adjusting line-height for alignment calculations */
+button,
+.font-mono,
+.flex.items-center {
+  line-height: 1 !important;
+}
+
+/* Helper classes for manual baseline shift correction to fix font vertical offsets */
+.baseline-shift-sm {
+  position: relative;
+  top: 1px;
+}
+
+.baseline-shift-xs {
+  position: relative;
+  top: 1.5px;
+}
+
+/* Harmonize Lucide icons vertical placement */
+.flex.items-center svg.lucide,
+button svg.lucide {
+  transform: translateY(-1.2px) !important;
+}

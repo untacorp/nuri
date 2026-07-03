@@ -19,11 +19,12 @@ interface EditorViewProps {
   status: string;
   setStatus: React.Dispatch<React.SetStateAction<string>>;
   reloadTree: () => void;
+  onAutoCompile?: (path: string) => void;
 }
 
 export default function EditorView({
   activeBook, activePath, onSelectPath,
-  goHome, onOpenModal, editor, status, setStatus, reloadTree
+  goHome, onOpenModal, editor, status, setStatus, reloadTree, onAutoCompile
 }: EditorViewProps) {
   const [diffContent, setDiffContent] = useState<{ html: string; hash: string; rawContent: string } | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(false);
@@ -185,12 +186,11 @@ export default function EditorView({
           ) : isFolderView ? (
             <div className="w-full h-full flex flex-col">
               <AssemblerView 
+                activeBook={activeBook}
                 activePath={activePath} 
                 chapterName={chapterName || ''} 
-                showLeftPanel={showLeftPanel} 
-                setShowLeftPanel={setShowLeftPanel} 
-                showRightPanel={showRightPanel}
-                setShowRightPanel={setShowRightPanel}
+                reloadTree={reloadTree}
+                onAutoCompile={onAutoCompile}
               />
             </div>
           ) : (

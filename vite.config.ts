@@ -13,5 +13,10 @@ export default defineConfig({
     alias: {
       '~': fileURLToPath(new URL('./src', import.meta.url))
     }
+  },
+  server: {
+    watch: {
+      ignored: ['**/*.md', '**/chapter.json', '**/assembly.json']
+    }
   }
 })
