@@ -13,7 +13,10 @@ importers:
         version: 0.5.20(tailwindcss@4.3.1)
       '@tailwindcss/vite':
         specifier: ^4.3.1
-        version: 4.3.1(vite@8.1.1(jiti@2.7.0))
+        version: 4.3.1(vite@8.1.1(@types/node@26.1.0)(jiti@2.7.0))
+      '@tiptap/extension-mathematics':
+        specifier: ^3.27.1
+        version: 3.27.1(@tiptap/core@3.27.1(@tiptap/pm@3.27.1))(@tiptap/pm@3.27.1)(katex@0.17.0)
       '@tiptap/pm':
         specifier: ^3.27.1
         version: 3.27.1
@@ -26,6 +29,9 @@ importers:
       diff:
         specifier: ^9.0.0
         version: 9.0.0
+      katex:
+        specifier: ^0.17.0
+        version: 0.17.0
       lucide-react:
         specifier: ^1.22.0
         version: 1.22.0(react@19.2.7)
@@ -65,7 +71,7 @@ importers:
         version: 5.0.6
       '@vitejs/plugin-react':
         specifier: ^6.0.3
-        version: 6.0.3(vite@8.1.1(jiti@2.7.0))
+        version: 6.0.3(vite@8.1.1(@types/node@26.1.0)(jiti@2.7.0))
       oxlint:
         specifier: ^1.71.0
         version: 1.71.0
@@ -74,7 +80,7 @@ importers:
         version: 6.0.3
       vite:
         specifier: ^8.1.1
-        version: 8.1.1(jiti@2.7.0)
+        version: 8.1.1(@types/node@26.1.0)(jiti@2.7.0)
 
 packages:
 
@@ -624,6 +630,13 @@ packages:
       '@tiptap/core': 3.27.1
       '@tiptap/pm': 3.27.1
 
+  '@tiptap/extension-mathematics@3.27.1':
+    resolution: {integrity: sha512-LClcd0f5LNHObq4fyBoHuZCWWtVjdHA5UdCpWCSdegC3kcuNhZQp/uey8mzPZXKUb73XDYvzjdhFz2UCRHH1Lw==}
+    peerDependencies:
+      '@tiptap/core': 3.27.1
+      '@tiptap/pm': 3.27.1
+      katex: ^0.16.4
+
   '@tiptap/extension-ordered-list@3.27.1':
     resolution: {integrity: sha512-GYrKqD//9nHJ2r80uXqbDMzRnFpGzbaEQRTSGaO/SH7DvXWFMow8evkOdjQ7PCQO07jNjJo75+A85Jwu3Ov3AA==}
     peerDependencies:
@@ -704,6 +717,10 @@ packages:
       babel-plugin-react-compiler:
         optional: true
 
+  commander@8.3.0:
+    resolution: {integrity: sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww==}
+    engines: {node: '>= 12'}
+
   cssesc@3.0.0:
     resolution: {integrity: sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==}
     engines: {node: '>=4'}
@@ -747,6 +764,10 @@ packages:
 
   jiti@2.7.0:
     resolution: {integrity: sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ==}
+    hasBin: true
+
+  katex@0.17.0:
+    resolution: {integrity: sha512-Vdw0ATsQ9V+LuegM/BTwQqV/6cTl5lbGcIrU+BCgLxyf6bo38ybOr372tuSIxir3CN720flu1meYR6XzNMwQnw==}
     hasBin: true
 
   lightningcss-android-arm64@1.32.0:
@@ -1254,12 +1275,12 @@ snapshots:
       postcss-selector-parser: 6.0.10
       tailwindcss: 4.3.1
 
-  '@tailwindcss/vite@4.3.1(vite@8.1.1(jiti@2.7.0))':
+  '@tailwindcss/vite@4.3.1(vite@8.1.1(@types/node@26.1.0)(jiti@2.7.0))':
     dependencies:
       '@tailwindcss/node': 4.3.1
       '@tailwindcss/oxide': 4.3.1
       tailwindcss: 4.3.1
-      vite: 8.1.1(jiti@2.7.0)
+      vite: 8.1.1(@types/node@26.1.0)(jiti@2.7.0)
 
   '@tauri-apps/api@2.11.1': {}
 
@@ -1397,6 +1418,12 @@ snapshots:
       '@tiptap/core': 3.27.1(@tiptap/pm@3.27.1)
       '@tiptap/pm': 3.27.1
 
+  '@tiptap/extension-mathematics@3.27.1(@tiptap/core@3.27.1(@tiptap/pm@3.27.1))(@tiptap/pm@3.27.1)(katex@0.17.0)':
+    dependencies:
+      '@tiptap/core': 3.27.1(@tiptap/pm@3.27.1)
+      '@tiptap/pm': 3.27.1
+      katex: 0.17.0
+
   '@tiptap/extension-ordered-list@3.27.1(@tiptap/extension-list@3.27.1(@tiptap/core@3.27.1(@tiptap/pm@3.27.1))(@tiptap/pm@3.27.1))':
     dependencies:
       '@tiptap/extension-list': 3.27.1(@tiptap/core@3.27.1(@tiptap/pm@3.27.1))(@tiptap/pm@3.27.1)
@@ -1503,10 +1530,12 @@ snapshots:
 
   '@types/use-sync-external-store@0.0.6': {}
 
-  '@vitejs/plugin-react@6.0.3(vite@8.1.1(jiti@2.7.0))':
+  '@vitejs/plugin-react@6.0.3(vite@8.1.1(@types/node@26.1.0)(jiti@2.7.0))':
     dependencies:
       '@rolldown/pluginutils': 1.0.1
-      vite: 8.1.1(jiti@2.7.0)
+      vite: 8.1.1(@types/node@26.1.0)(jiti@2.7.0)
+
+  commander@8.3.0: {}
 
   cssesc@3.0.0: {}
 
@@ -1533,6 +1562,10 @@ snapshots:
   graceful-fs@4.2.11: {}
 
   jiti@2.7.0: {}
+
+  katex@0.17.0:
+    dependencies:
+      commander: 8.3.0
 
   lightningcss-android-arm64@1.32.0:
     optional: true
@@ -1770,7 +1803,7 @@ snapshots:
 
   util-deprecate@1.0.2: {}
 
-  vite@8.1.1(jiti@2.7.0):
+  vite@8.1.1(@types/node@26.1.0)(jiti@2.7.0):
     dependencies:
       lightningcss: 1.32.0
       picomatch: 4.0.4
@@ -1778,6 +1811,7 @@ snapshots:
       rolldown: 1.1.3
       tinyglobby: 0.2.17
     optionalDependencies:
+      '@types/node': 26.1.0
       fsevents: 2.3.3
       jiti: 2.7.0
 

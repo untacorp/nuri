@@ -2,14 +2,18 @@ import { useState, useEffect } from 'react';
 import { fetchChapterConfig, saveChapterConfig } from '../../editor/services/api';
 import { showAlert } from '../../ui/components/GlobalDialog';
 import { compileManuscript } from '../../library/services/api';
-import { Layers, GripVertical, Settings2, Trash2, Plus } from 'lucide-react';
+import { Layers, GripVertical, Settings2, Trash2, Plus, PanelLeft, PanelRight } from 'lucide-react';
 
 interface AssemblerViewProps {
   activePath: string | null;
   chapterName: string;
+  showLeftPanel: boolean;
+  setShowLeftPanel: React.Dispatch<React.SetStateAction<boolean>>;
+  showRightPanel: boolean;
+  setShowRightPanel: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function AssemblerView({ activePath, chapterName }: AssemblerViewProps) {
+export default function AssemblerView({ activePath, chapterName, showLeftPanel, setShowLeftPanel, showRightPanel, setShowRightPanel }: AssemblerViewProps) {
   const [config, setConfig] = useState<string[]>([]);
   const [availableFiles, setAvailableFiles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +60,10 @@ export default function AssemblerView({ activePath, chapterName }: AssemblerView
     e.dataTransfer.setData('text/plain', index.toString());
   };
 
+  const onDragEnd = () => {
+    setDraggedIdx(null);
+  };
+
   const onDragOver = (e: React.DragEvent) => e.preventDefault();
 
   const onDrop = (e: React.DragEvent, index: number) => {
@@ -74,10 +82,19 @@ export default function AssemblerView({ activePath, chapterName }: AssemblerView
   if (loading) return <div className="flex-1 flex justify-center items-center font-mono text-xs tracking-wider text-text-muted">Loading...</div>;
 
   return (
-    <div className="flex-1 overflow-y-auto bg-bg-main px-8 py-16 animate-in fade-in duration-300">
+    <div className="flex-1 overflow-y-auto bg-bg-main px-8 py-16">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-10 pb-6 border-b border-border-main">
           <div className="flex items-center gap-4">
+            {!showLeftPanel && (
+              <button 
+                onClick={() => setShowLeftPanel(true)}
+                className="flex items-center justify-center p-3 border border-border-main text-text-muted hover:text-text-main hover:border-text-main bg-bg-card transition-colors rounded-none"
+                title="Buka Panel Kiri"
+              >
+                <PanelLeft size={16} />
+              </button>
+            )}
             <div className="bg-bg-input p-3 rounded-none text-text-main border border-border-main">
               <Layers size={24} />
             </div>
@@ -91,23 +108,34 @@ export default function AssemblerView({ activePath, chapterName }: AssemblerView
             </div>
           </div>
           
-          <button
-            onClick={() => {
-              if (activePath) {
-                compileManuscript(activePath).then((res) => {
-                if (res.success) {
-                  showAlert("Kompilasi Sukses", `Bab "${chapterName}" berhasil dikompilasi!\nDisimpan di:\n${res.compiledPath}`);
-                } else {
-                  showAlert("Kompilasi Gagal", `Gagal kompilasi Bab: ${res.error}`);
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => {
+                if (activePath) {
+                  compileManuscript(activePath).then((res) => {
+                  if (res.success) {
+                    showAlert("Kompilasi Sukses", `Bab "${chapterName}" berhasil dikompilasi!\nDisimpan di:\n${res.compiledPath}`);
+                  } else {
+                    showAlert("Kompilasi Gagal", `Gagal kompilasi Bab: ${res.error}`);
+                  }
+                });
                 }
-              });
-              }
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-card hover:bg-accent hover:text-accent-foreground text-text-main border border-border-main rounded-none text-xs font-bold font-mono transition-colors cursor-pointer"
-            title="Kompilasi Draf di Bab Ini menjadi Satu File MD"
-          >
-            Compile Bab
-          </button>
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-card hover:bg-accent hover:text-accent-foreground text-text-main border border-border-main rounded-none text-xs font-bold font-mono transition-colors cursor-pointer"
+              title="Kompilasi Draf di Bab Ini menjadi Satu File MD"
+            >
+              Compile Bab
+            </button>
+            {!showRightPanel && (
+              <button 
+                onClick={() => setShowRightPanel(true)}
+                className="flex items-center justify-center p-3 border border-border-main text-text-muted hover:text-text-main hover:border-text-main bg-bg-card transition-colors rounded-none"
+                title="Buka Panel Kanan"
+              >
+                <PanelRight size={16} />
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="bg-bg-card rounded-none border border-border-main overflow-hidden mb-8">
@@ -152,6 +180,7 @@ export default function AssemblerView({ activePath, chapterName }: AssemblerView
                   key={`${filename}-${idx}`}
                   draggable
                   onDragStart={(e) => onDragStart(e, idx)}
+                  onDragEnd={onDragEnd}
                   onDragOver={onDragOver}
                   onDrop={(e) => onDrop(e, idx)}
                   className={`flex items-center gap-4 bg-bg-card border ${draggedIdx === idx ? 'border-text-main opacity-50 bg-bg-input' : 'border-border-main hover:border-text-main'} p-3 rounded-none transition-colors cursor-grab active:cursor-grabbing group`}

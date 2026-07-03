@@ -28,7 +28,7 @@ pub fn create_node(app: AppHandle, node_type: String, name: String, parent_path:
         git_commit(&target_path, "Initial commit: Membuat buku baru");
     } else if node_type == "chapter" || node_type == "part" || node_type == "version" {
         if node_type == "version" {
-            let content = format!("# {}\n\nMulai menulis di sini...", name.replace(".md", ""));
+            let content = format!("# {}\n\n", name.replace(".md", ""));
             fs::write(p, content).map_err(|e| e.to_string())?;
         }
         

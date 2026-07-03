@@ -93,3 +93,35 @@ body {
   @apply text-2xl mt-8 mb-4;
 }
 
+/* Tiptap Mathematics extension styles */
+.tiptap-mathematics-render {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  padding: 0.125rem 0.25rem;
+  display: inline-block;
+  border-radius: 0;
+}
+
+.tiptap-mathematics-render--editable:hover {
+  background-color: var(--bg-input);
+  border-color: var(--border-hover);
+}
+
+.tiptap-mathematics-render[data-type="block-math"] {
+  display: block;
+  margin: 1.5rem 0;
+  text-align: center;
+  padding: 1rem;
+}
+
+.tiptap-mathematics-render.block-math-error,
+.tiptap-mathematics-render.inline-math-error {
+  color: #ef4444;
+  border-color: #ef4444;
+  border-style: dashed;
+  background-color: rgba(239, 68, 68, 0.05);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 0.875rem;
+}
+

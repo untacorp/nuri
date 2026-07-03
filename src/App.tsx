@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { Mathematics } from '@tiptap/extension-mathematics';
+import 'katex/dist/katex.min.css';
 
 import { fetchTree, createNode, deleteBook, updateBookName } from '~/features/library/services/api';
 import { fetchFile, saveFile } from '~/features/editor/services/api';
@@ -16,7 +18,6 @@ import './index.css';
 
 export default function App() {
   const [status, setStatus] = useState('Ready');
-  const [sidebarPosition, setSidebarPosition] = useState<'left' | 'right'>('left');
   const [tree, setTree] = useState<LibraryNode[]>([]);
   
   const [view, setView] = useState<'home' | 'editor'>('home');
@@ -64,7 +65,39 @@ export default function App() {
   const saveTimeout = useRef<any>(null);
 
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit,
+      Mathematics.configure({
+        inlineOptions: {
+          onClick: (node, pos) => {
+            const currentLatex = node.attrs.latex;
+            showPrompt("Edit Rumus LaTeX (Inline)", currentLatex).then((newLatex) => {
+              if (newLatex !== null) {
+                if (newLatex.trim() === '') {
+                  editor?.commands.deleteInlineMath({ pos });
+                } else {
+                  editor?.commands.updateInlineMath({ latex: newLatex.trim(), pos });
+                }
+              }
+            });
+          }
+        },
+        blockOptions: {
+          onClick: (node, pos) => {
+            const currentLatex = node.attrs.latex;
+            showPrompt("Edit Rumus LaTeX (Block)", currentLatex).then((newLatex) => {
+              if (newLatex !== null) {
+                if (newLatex.trim() === '') {
+                  editor?.commands.deleteBlockMath({ pos });
+                } else {
+                  editor?.commands.updateBlockMath({ latex: newLatex.trim(), pos });
+                }
+              }
+            });
+          }
+        }
+      })
+    ],
     content: '',
     onUpdate: ({ editor }) => {
       const currentPath = activePathRef.current;
@@ -240,8 +273,6 @@ export default function App() {
           activePath={activePath}
           onSelectPath={handleSelectPath}
           goHome={goHome}
-          sidebarPosition={sidebarPosition}
-          setSidebarPosition={setSidebarPosition}
           onOpenModal={handleOpenModal}
           editor={editor}
           status={status}

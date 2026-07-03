@@ -3,9 +3,9 @@ import { FileText } from 'lucide-react';
 import { turndownService } from '~/features/editor/utils/markdown';
 import { generateDiffHtml } from '~/features/editor/utils/diffRenderer';
 import { LibraryNode } from '~/features/library/components/TreeNode';
-import InspectorPanel from '~/features/inspector/components/InspectorPanel';
+import InspectorContent from '~/features/inspector/components/InspectorContent';
 import AssemblerView from '~/features/assembler/components/AssemblerView';
-import LibrarySidebar from '~/features/library/components/LibrarySidebar';
+import LibraryContent from '~/features/library/components/LibraryContent';
 import DiffViewer from '~/features/inspector/components/DiffViewer';
 import EditorSheet from '~/features/editor/components/EditorSheet';
 
@@ -14,8 +14,6 @@ interface EditorViewProps {
   activePath: string | null;
   onSelectPath: (path: string | null) => void;
   goHome: () => void;
-  sidebarPosition: 'left' | 'right';
-  setSidebarPosition: React.Dispatch<React.SetStateAction<'left' | 'right'>>;
   onOpenModal: (type: string, parentNode: LibraryNode | null) => void;
   editor: any;
   status: string;
@@ -25,12 +23,38 @@ interface EditorViewProps {
 
 export default function EditorView({
   activeBook, activePath, onSelectPath,
-  goHome, sidebarPosition, setSidebarPosition,
-  onOpenModal, editor, status, setStatus, reloadTree
+  goHome, onOpenModal, editor, status, setStatus, reloadTree
 }: EditorViewProps) {
-  const [showInspector, setShowInspector] = useState(false);
   const [diffContent, setDiffContent] = useState<{ html: string; hash: string; rawContent: string } | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(false);
+  
+  // Generic Panel States
+  const [layoutSwapped, setLayoutSwapped] = useState(false); // false: Left=Library, Right=Inspector. true: Left=Inspector, Right=Library
+  
+  const [showLibrary, setShowLibrary] = useState(true);
+  const [showInspector, setShowInspector] = useState(false);
+
+  const showLeftPanel = layoutSwapped ? showInspector : showLibrary;
+  const showRightPanel = layoutSwapped ? showLibrary : showInspector;
+
+  const setShowLeftPanel = (val: boolean | ((prev: boolean) => boolean)) => {
+    if (layoutSwapped) {
+      setShowInspector(prev => typeof val === 'function' ? val(prev) : val);
+    } else {
+      setShowLibrary(prev => typeof val === 'function' ? val(prev) : val);
+    }
+  };
+
+  const setShowRightPanel = (val: boolean | ((prev: boolean) => boolean)) => {
+    if (layoutSwapped) {
+      setShowLibrary(prev => typeof val === 'function' ? val(prev) : val);
+    } else {
+      setShowInspector(prev => typeof val === 'function' ? val(prev) : val);
+    }
+  };
+  
+  const [leftPanelWidth, setLeftPanelWidth] = useState(288);
+  const [rightPanelWidth, setRightPanelWidth] = useState(320);
 
   useEffect(() => {
     if (editor) {
@@ -57,26 +81,89 @@ export default function EditorView({
     setDiffContent({ html: diffHtml, hash, rawContent: content });
   };
 
+  // Drag Handlers
+  const handleLeftDrag = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = leftPanelWidth;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const delta = moveEvent.clientX - startX;
+      setLeftPanelWidth(Math.max(200, Math.min(startWidth + delta, 800)));
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  };
+
+  const handleRightDrag = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = rightPanelWidth;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const delta = moveEvent.clientX - startX;
+      setRightPanelWidth(Math.max(250, Math.min(startWidth - delta, 600)));
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  };
+
+  const renderLibraryContent = (isRightSide: boolean, onCollapse: () => void) => (
+    <LibraryContent
+      activeBook={activeBook}
+      activePath={activePath}
+      onSelectPath={onSelectPath}
+      goHome={goHome}
+      isRightSide={isRightSide}
+      onToggleSwap={() => setLayoutSwapped(s => !s)}
+      onOpenModal={onOpenModal}
+      setStatus={setStatus}
+      reloadTree={reloadTree}
+      setDiffContent={setDiffContent}
+      onCollapse={onCollapse}
+    />
+  );
+
+  const renderInspectorContent = (isRightSide: boolean, onCollapse: () => void) => (
+    <InspectorContent 
+      activePath={activePath || ''} 
+      onClose={onCollapse}
+      onContentSelect={handleSelectHistory}
+      status={status}
+      editor={editor}
+      isRightSide={isRightSide}
+      onToggleSwap={() => setLayoutSwapped(s => !s)}
+    />
+  );
+
   return (
-    <div className={`flex h-screen overflow-hidden ${sidebarPosition === 'right' ? 'flex-row-reverse' : 'flex-row'} animate-in fade-in duration-300`}>
+    <div className="flex h-screen overflow-hidden flex-row bg-bg-main animate-in fade-in duration-300">
       
-      {/* Sidebar */}
-      <LibrarySidebar
-        activeBook={activeBook}
-        activePath={activePath}
-        onSelectPath={onSelectPath}
-        goHome={goHome}
-        sidebarPosition={sidebarPosition}
-        setSidebarPosition={setSidebarPosition}
-        onOpenModal={onOpenModal}
-        status={status}
-        setStatus={setStatus}
-        reloadTree={reloadTree}
-        setDiffContent={setDiffContent}
-      />
+      {/* Left Panel */}
+      {showLeftPanel && (!layoutSwapped || activePath) && (
+        <div className="relative shrink-0 flex h-full bg-bg-card border-r border-border-main z-10" style={{ width: leftPanelWidth }}>
+          {layoutSwapped ? renderInspectorContent(false, () => setShowLeftPanel(false)) : renderLibraryContent(false, () => setShowLeftPanel(false))}
+          <div 
+            onMouseDown={handleLeftDrag}
+            className="absolute top-0 bottom-0 right-0 translate-x-1/2 w-2 cursor-col-resize hover:bg-accent/50 z-50"
+          />
+        </div>
+      )}
       
-      {/* Editor Area (Bisa Terbelah Dua jika Diff Aktif) */}
-      <div className="flex-1 flex overflow-hidden bg-bg-main">
+      {/* Center Area */}
+      <div className="flex-1 flex overflow-hidden bg-bg-main min-w-[300px]">
         
         {/* Editor Utama / Assembler */}
         <div className="flex-1 flex flex-col items-center overflow-y-auto border-r border-border-main relative bg-bg-card">
@@ -84,25 +171,42 @@ export default function EditorView({
           {!activePath ? (
             <div className="flex flex-col items-center justify-center h-full text-text-muted py-16">
               <FileText size={32} className="mb-4 opacity-30 text-text-muted" />
-              <p className="font-mono text-xs text-text-muted tracking-wider">Pilih lembar tulisan di sidebar untuk mulai merangkai cerita.</p>
+              <p className="font-mono text-xs text-text-muted tracking-wider mb-2">Pilih lembar tulisan untuk mulai merangkai cerita.</p>
+              
+              {((!layoutSwapped && !showLeftPanel) || (layoutSwapped && !showRightPanel)) && (
+                <button 
+                  onClick={() => layoutSwapped ? setShowRightPanel(true) : setShowLeftPanel(true)}
+                  className="mt-6 flex items-center gap-2 px-6 py-3 bg-bg-card border border-border-main text-text-muted hover:text-text-main hover:border-border-hover hover:bg-bg-input transition-colors font-mono text-xs font-bold rounded-none"
+                >
+                  Buka Library
+                </button>
+              )}
             </div>
           ) : isFolderView ? (
             <div className="w-full h-full flex flex-col">
-              <AssemblerView activePath={activePath} chapterName={chapterName || ''} />
+              <AssemblerView 
+                activePath={activePath} 
+                chapterName={chapterName || ''} 
+                showLeftPanel={showLeftPanel} 
+                setShowLeftPanel={setShowLeftPanel} 
+                showRightPanel={showRightPanel}
+                setShowRightPanel={setShowRightPanel}
+              />
             </div>
           ) : (
             <EditorSheet
               editor={editor}
               isReadOnly={isReadOnly}
               setIsReadOnly={setIsReadOnly}
-              status={status}
-              showInspector={showInspector}
-              setShowInspector={setShowInspector}
+              showRightPanel={showRightPanel}
+              setShowRightPanel={setShowRightPanel}
+              showLeftPanel={showLeftPanel}
+              setShowLeftPanel={setShowLeftPanel}
               setDiffContent={setDiffContent}
               activePath={activePath}
-
               onSelectPath={onSelectPath}
               reloadTree={reloadTree}
+              status={status}
             />
           )}
         </div>
@@ -121,25 +225,14 @@ export default function EditorView({
         )}
       </div>
       
-      {/* Panel Inspector Sidebar (Kanan) */}
-      {showInspector && activePath && (
-        <InspectorPanel 
-          activePath={activePath} 
-          onClose={() => {
-            setShowInspector(false);
-            setDiffContent(null);
-          }}
-          onContentSelect={handleSelectHistory}
-          status={status}
-          editor={editor}
-        />
-      )}
-      
-      {/* Status Bar */}
-      {(isFolderView || !activePath) && status !== 'Ready' && (
-        <div className="fixed bottom-6 right-6 bg-bg-card px-4 py-2 rounded-none border border-border-main text-xs font-bold font-mono text-text-main flex items-center gap-2.5 z-50 animate-in fade-in duration-300">
-          <div className={`w-2.5 h-2.5 rounded-none border border-border-main ${status === 'Synced' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`}></div>
-          {status}
+      {/* Right Panel */}
+      {showRightPanel && (layoutSwapped || activePath) && (
+        <div className="relative shrink-0 flex h-full bg-bg-card border-l border-border-main z-10" style={{ width: rightPanelWidth }}>
+          <div 
+            onMouseDown={handleRightDrag}
+            className="absolute top-0 bottom-0 left-0 -translate-x-1/2 w-2 cursor-col-resize hover:bg-accent/50 z-50"
+          />
+          {layoutSwapped ? renderLibraryContent(true, () => setShowRightPanel(false)) : renderInspectorContent(true, () => setShowRightPanel(false))}
         </div>
       )}
     </div>

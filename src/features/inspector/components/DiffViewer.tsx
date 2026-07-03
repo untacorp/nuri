@@ -65,34 +65,34 @@ export default function DiffViewer({
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-bg-card border-l border-border-main relative">
       <div className="w-full border-b border-border-main bg-bg-input px-6 py-3 flex items-center justify-between select-none">
-        <span className="text-xs font-mono text-text-muted flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-none border border-border-main bg-amber-500"></span>
-          Perbedaan Versi (Diff Viewer)
+        <span className="text-xs font-mono text-text-muted flex items-center gap-1.5 font-bold tracking-wider">
+          Perbedaan Versi
         </span>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <button
             onClick={handleCreateVariationFromDiff}
-            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold font-mono border border-border-main bg-bg-card hover:border-border-hover text-text-main rounded-none transition-colors cursor-pointer"
+            className="p-1.5 rounded-none border border-transparent hover:border-border-main transition-colors text-text-muted hover:text-text-main hover:bg-bg-input cursor-pointer"
             title="Buat Variasi Baru dari Versi Ini"
           >
-            <Copy size={12} />
-            <span>Buat Variasi</span>
+            <Copy size={14} />
           </button>
           <button
             onClick={handleRestoreFromHistory}
             disabled={isReadOnly}
-            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold font-mono border border-border-main bg-bg-card hover:border-border-hover text-text-main disabled:opacity-30 rounded-none transition-colors cursor-pointer"
+            className="p-1.5 rounded-none border border-transparent hover:border-border-main transition-colors text-text-muted hover:text-text-main hover:bg-bg-input cursor-pointer disabled:opacity-30 disabled:hover:border-transparent disabled:hover:bg-transparent"
             title="Kembalikan isi draf aktif ke versi dari commit ini"
           >
-            <RotateCcw size={12} />
-            <span>Pulihkan Versi</span>
+            <RotateCcw size={14} />
           </button>
+          
+          <div className="w-px h-4 bg-border-main mx-2"></div>
+          
           <button 
             onClick={() => setDiffContent(null)}
-            className="p-1.5 bg-bg-card border border-border-main rounded-none text-text-muted hover:text-red-500 hover:border-red-500 transition-colors cursor-pointer"
+            className="p-1.5 rounded-none border border-transparent transition-colors text-text-muted hover:text-red-500 hover:border-red-500 hover:bg-red-500/10 cursor-pointer"
             title="Tutup Perbandingan"
           >
-            <X size={16} />
+            <X size={14} />
           </button>
         </div>
       </div>

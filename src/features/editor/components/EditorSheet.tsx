@@ -11,8 +11,10 @@ interface EditorSheetProps {
   isReadOnly: boolean;
   setIsReadOnly: React.Dispatch<React.SetStateAction<boolean>>;
   status: string;
-  showInspector: boolean;
-  setShowInspector: React.Dispatch<React.SetStateAction<boolean>>;
+  showRightPanel: boolean;
+  setShowRightPanel: React.Dispatch<React.SetStateAction<boolean>>;
+  showLeftPanel: boolean;
+  setShowLeftPanel: React.Dispatch<React.SetStateAction<boolean>>;
   setDiffContent: React.Dispatch<React.SetStateAction<any>>;
   activePath: string;
 
@@ -25,8 +27,10 @@ export default function EditorSheet({
   isReadOnly,
   setIsReadOnly,
   status,
-  showInspector,
-  setShowInspector,
+  showRightPanel,
+  setShowRightPanel,
+  showLeftPanel,
+  setShowLeftPanel,
   setDiffContent,
   activePath,
 
@@ -67,9 +71,10 @@ export default function EditorSheet({
         editor={editor}
         isReadOnly={isReadOnly}
         setIsReadOnly={setIsReadOnly}
-        status={status}
-        showInspector={showInspector}
-        setShowInspector={setShowInspector}
+        showRightPanel={showRightPanel}
+        setShowRightPanel={setShowRightPanel}
+        showLeftPanel={showLeftPanel}
+        setShowLeftPanel={setShowLeftPanel}
         setDiffContent={setDiffContent}
         activePath={activePath}
       />
@@ -108,6 +113,12 @@ export default function EditorSheet({
         <span className="h-[22px] flex items-center bg-bg-card px-2.5 py-0 border border-border-main tracking-wider font-mono">
           {chars} karakter
         </span>
+        {status !== 'Ready' && (
+          <span className="h-[22px] flex items-center gap-1.5 bg-bg-card px-2.5 py-0 border border-border-main tracking-wider font-mono">
+            <span className={`w-2 h-2 rounded-none border border-border-main ${status === 'Synced' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`}></span>
+            {status}
+          </span>
+        )}
       </div>
     </div>
   );
