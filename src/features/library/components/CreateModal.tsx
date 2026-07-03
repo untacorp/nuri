@@ -28,7 +28,7 @@ export default function CreateModal({ isOpen, type, parentNode, onClose, onSubmi
       <div className="bg-bg-card rounded-none w-full max-w-md overflow-hidden border-2 border-border-main scale-100 transition-transform">
         <div className="px-6 py-5 border-b border-border-main flex justify-between items-center">
           <div>
-            <h3 className="text-sm font-bold text-text-main uppercase tracking-wider font-mono">
+            <h3 className="text-sm font-bold text-text-main tracking-wider font-mono">
               Tambah {type === 'book' ? 'Buku' : type === 'chapter' ? 'Bab' : type === 'part' ? 'Bagian (Part)' : 'Versi/Variasi'} Baru
             </h3>
           </div>
@@ -39,7 +39,7 @@ export default function CreateModal({ isOpen, type, parentNode, onClose, onSubmi
         
         <div className="p-6 flex flex-col gap-4">
           <div>
-            <label className="block text-xs font-bold text-text-muted mb-1.5 uppercase tracking-wider font-mono">
+            <label className="block text-xs font-bold text-text-muted mb-1.5 tracking-wider font-mono">
               Nama {type === 'book' ? 'Buku' : type === 'chapter' ? 'Bab' : type === 'part' ? 'Part' : 'Versi/Variasi'}
             </label>
             <input 
@@ -54,7 +54,7 @@ export default function CreateModal({ isOpen, type, parentNode, onClose, onSubmi
           
           {type === 'book' && (
             <div>
-              <label className="block text-xs font-bold text-text-muted mb-1.5 uppercase tracking-wider font-mono">Lokasi Folder (Absolute Path)</label>
+              <label className="block text-xs font-bold text-text-muted mb-1.5 tracking-wider font-mono">Lokasi Folder (Absolute Path)</label>
               <input 
                 type="text" 
                 placeholder="Misal: /home/auttomus/Documents/Obsidian/BukuKu" 
@@ -72,7 +72,7 @@ export default function CreateModal({ isOpen, type, parentNode, onClose, onSubmi
         <div className="px-6 py-4 bg-bg-input flex justify-end gap-3 border-t border-border-main">
           <button 
             onClick={onClose} 
-            className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-text-muted hover:text-text-main border border-transparent hover:border-border-main rounded-none transition-colors font-mono"
+            className="px-4 py-2 text-xs font-bold tracking-wider text-text-muted hover:text-text-main border border-transparent hover:border-border-main rounded-none transition-colors font-mono"
           >
             Batal
           </button>
@@ -84,7 +84,7 @@ export default function CreateModal({ isOpen, type, parentNode, onClose, onSubmi
               }
             }}
             disabled={!name.trim() || (type === 'book' && !customPath.trim())}
-            className="px-5 py-2 text-xs font-bold uppercase tracking-wider bg-accent text-accent-foreground border border-accent hover:bg-accent-hover hover:border-accent-hover disabled:opacity-50 disabled:bg-bg-input disabled:text-text-muted disabled:border-border-main rounded-none transition-colors font-mono"
+            className="px-5 py-2 text-xs font-bold tracking-wider bg-accent text-accent-foreground border border-accent hover:bg-accent-hover hover:border-accent-hover disabled:opacity-50 disabled:bg-bg-input disabled:text-text-muted disabled:border-border-main rounded-none transition-colors font-mono"
           >
             Simpan
           </button>

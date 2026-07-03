@@ -52,25 +52,25 @@ export default function TreeNode({ node, activePath, onSelect, onOpenModal, onCo
           <button 
             type="button"
             onClick={handleToggle}
-            className="p-0.5 hover:bg-bg-input border border-transparent hover:border-border-main rounded-none transition-colors text-text-muted hover:text-text-main"
+            className="p-0.5 hover:bg-bg-input border border-transparent hover:border-border-main rounded-none transition-colors text-text-muted hover:text-text-main shrink-0"
           >
-            {isOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+            {isOpen ? <ChevronDown size={12} className="shrink-0" /> : <ChevronRight size={12} className="shrink-0" />}
           </button>
         )}
-        {isPart ? <FileText size={14} /> : (isOpen ? <FolderOpen size={14} /> : <Folder size={14} />)}
+        {isPart ? <FileText size={14} className="shrink-0" /> : (isOpen ? <FolderOpen size={14} className="shrink-0" /> : <Folder size={14} className="shrink-0" />)}
         <span className="truncate select-none">{node.name.replace('.md', '')}</span>
         
         {!isPart && (
           <button 
             type="button"
-            className="ml-auto opacity-0 group-hover:opacity-100 p-0.5 hover:bg-bg-input border border-transparent hover:border-border-main rounded-none text-text-muted hover:text-text-main"
+            className="ml-auto opacity-0 group-hover:opacity-100 p-0.5 hover:bg-bg-input border border-transparent hover:border-border-main rounded-none text-text-muted hover:text-text-main shrink-0"
             onClick={(e) => { 
               e.stopPropagation(); 
               const typeToCreate = node.type === 'book' ? 'chapter' : (node.type === 'chapter' ? 'part' : 'version');
               onOpenModal(typeToCreate, node); 
             }}
           >
-            <Plus size={10} />
+            <Plus size={10} className="shrink-0" />
           </button>
         )}
       </div>

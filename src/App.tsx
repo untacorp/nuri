@@ -2,15 +2,16 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 
-import { fetchTree, createNode, deleteBook, updateBookName } from './features/library/services/api';
-import { fetchFile, saveFile } from './features/editor/services/api';
-import { turndownService, parseMarkdown } from './features/editor/utils/markdown';
+import { fetchTree, createNode, deleteBook, updateBookName } from '~/features/library/services/api';
+import { fetchFile, saveFile } from '~/features/editor/services/api';
+import { turndownService, parseMarkdown } from '~/features/editor/utils/markdown';
 
-import CreateModal from './features/library/components/CreateModal';
-import HomeView from './features/library/components/HomeView';
-import EditorView from './features/editor/components/EditorView';
-import GlobalDialog, { showConfirm, showPrompt } from './features/ui/components/GlobalDialog';
-import { LibraryNode } from './features/library/components/TreeNode';
+import CreateModal from '~/features/library/components/CreateModal';
+import HomeView from '~/features/library/components/HomeView';
+import EditorView from '~/features/editor/components/EditorView';
+import GlobalDialog, { showConfirm, showPrompt } from '~/features/ui/components/GlobalDialog';
+import { LibraryNode } from '~/features/library/components/TreeNode';
+import { listen } from '@tauri-apps/api/event';
 import './index.css';
 
 export default function App() {
@@ -100,7 +101,6 @@ export default function App() {
     let unlistenFile: () => void;
 
     const setupListeners = async () => {
-      const { listen } = await import('@tauri-apps/api/event');
       unlistenTree = await listen('tree_update', () => {
         loadTree();
       });

@@ -71,7 +71,7 @@ export default function AssemblerView({ activePath, chapterName }: AssemblerView
   // Find files not in config
   const unassignedFiles = availableFiles.filter(f => !config.includes(f));
 
-  if (loading) return <div className="flex-1 flex justify-center items-center font-mono text-xs uppercase tracking-wider text-text-muted">Loading...</div>;
+  if (loading) return <div className="flex-1 flex justify-center items-center font-mono text-xs tracking-wider text-text-muted">Loading...</div>;
 
   return (
     <div className="flex-1 overflow-y-auto bg-bg-main px-8 py-16 animate-in fade-in duration-300">
@@ -82,7 +82,7 @@ export default function AssemblerView({ activePath, chapterName }: AssemblerView
               <Layers size={24} />
             </div>
             <div>
-              <h1 className="text-xl font-bold font-mono uppercase tracking-wider text-text-main mb-1">
+              <h1 className="text-xl font-bold font-mono tracking-wider text-text-main mb-1">
                 Assembler
               </h1>
               <p className="text-xs font-mono text-text-muted">
@@ -103,7 +103,7 @@ export default function AssemblerView({ activePath, chapterName }: AssemblerView
               });
               }
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-card hover:bg-accent hover:text-accent-foreground text-text-main border border-border-main rounded-none text-xs font-bold font-mono uppercase transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-card hover:bg-accent hover:text-accent-foreground text-text-main border border-border-main rounded-none text-xs font-bold font-mono transition-colors cursor-pointer"
             title="Kompilasi Draf di Bab Ini menjadi Satu File MD"
           >
             Compile Bab
@@ -112,8 +112,8 @@ export default function AssemblerView({ activePath, chapterName }: AssemblerView
 
         <div className="bg-bg-card rounded-none border border-border-main overflow-hidden mb-8">
           <div className="bg-bg-input px-6 py-4 border-b border-border-main flex items-center justify-between">
-            <h2 className="font-bold text-text-main text-xs tracking-wider uppercase font-mono">Urutan Naskah (Chapter.json)</h2>
-            <div className="flex items-center gap-2 text-xs font-bold font-mono uppercase text-text-muted">
+            <h2 className="font-bold text-text-main text-xs tracking-wider font-mono">Urutan Naskah (Chapter.json)</h2>
+            <div className="flex items-center gap-2 text-xs font-bold font-mono text-text-muted">
               <Settings2 size={14} /> Total {config.length} Part
             </div>
           </div>
@@ -165,7 +165,7 @@ export default function AssemblerView({ activePath, chapterName }: AssemblerView
                   </div>
                   
                   <div className="flex-1 flex flex-col justify-center">
-                    <span className="text-[9px] text-text-muted font-bold uppercase tracking-widest font-mono mb-0.5">{partLabel}</span>
+                    <span className="text-[9px] text-text-muted font-bold tracking-widest font-mono mb-0.5">{partLabel}</span>
                     {variations.length > 1 ? (
                       <div className="relative inline-block w-full">
                         <select 
@@ -206,13 +206,13 @@ export default function AssemblerView({ activePath, chapterName }: AssemblerView
 
         {unassignedFiles.length > 0 && (
           <div>
-            <h3 className="text-[10px] font-bold font-mono uppercase tracking-widest text-text-muted mb-3 ml-1">Part yang belum dirakit</h3>
+            <h3 className="text-[10px] font-bold font-mono tracking-widest text-text-muted mb-3 ml-1">Part yang belum dirakit</h3>
             <div className="flex flex-wrap gap-2">
               {unassignedFiles.map(file => (
                 <button 
                   key={file}
                   onClick={() => handleAddBlock(file)}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-bg-card border border-border-main hover:border-text-main rounded-none text-xs font-bold font-mono uppercase text-text-muted hover:text-text-main transition-colors"
+                  className="flex items-center gap-2 px-3 py-1.5 bg-bg-card border border-border-main hover:border-text-main rounded-none text-xs font-bold font-mono text-text-muted hover:text-text-main transition-colors"
                 >
                   <Plus size={14} />
                   {file}

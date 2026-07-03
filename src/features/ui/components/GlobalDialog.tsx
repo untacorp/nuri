@@ -73,7 +73,7 @@ export default function GlobalDialog() {
       <div className="bg-bg-card rounded-none w-full max-w-md overflow-hidden border-2 border-border-main scale-100 transition-transform shadow-2xl">
         <div className="px-6 py-5 border-b border-border-main flex justify-between items-center">
           <div>
-            <h3 className="text-sm font-bold text-text-main uppercase tracking-wider font-mono">
+            <h3 className="text-sm font-bold text-text-main tracking-wider font-mono">
               {dialog.title}
             </h3>
           </div>
@@ -102,14 +102,14 @@ export default function GlobalDialog() {
           {dialog.type !== 'alert' && (
             <button 
               onClick={handleClose} 
-              className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-text-muted hover:text-text-main border border-transparent hover:border-border-main rounded-none transition-colors font-mono"
+              className="px-4 py-2 text-xs font-bold tracking-wider text-text-muted hover:text-text-main border border-transparent hover:border-border-main rounded-none transition-colors font-mono"
             >
               Batal
             </button>
           )}
           <button 
             onClick={handleConfirm}
-            className="px-5 py-2 text-xs font-bold uppercase tracking-wider bg-accent text-accent-foreground border border-accent hover:bg-accent-hover hover:border-accent-hover rounded-none transition-colors font-mono"
+            className="px-5 py-2 text-xs font-bold tracking-wider bg-accent text-accent-foreground border border-accent hover:bg-accent-hover hover:border-accent-hover rounded-none transition-colors font-mono"
           >
             {dialog.type === 'alert' ? 'OK' : 'Konfirmasi'}
           </button>
