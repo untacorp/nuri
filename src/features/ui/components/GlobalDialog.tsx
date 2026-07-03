@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { useGlobalDialog } from '../hooks/useGlobalDialog';
 
 export interface DialogDetail {
   type: 'prompt' | 'confirm' | 'alert' | 'mathPrompt';
@@ -48,37 +48,17 @@ export const showAlert = (title: string, message = ''): Promise<boolean> => {
 };
 
 export default function GlobalDialog() {
-  const [dialog, setDialog] = useState<DialogDetail | null>(null);
-  const [inputValue, setInputValue] = useState('');
-  const [isBlockMath, setIsBlockMath] = useState(false);
-
-  useEffect(() => {
-    const handleDialog = (e: CustomEvent<DialogDetail>) => {
-      setDialog(e.detail);
-      setInputValue(e.detail.defaultValue || '');
-      setIsBlockMath(false);
-    };
-    window.addEventListener('global-dialog', handleDialog);
-    return () => window.removeEventListener('global-dialog', handleDialog);
-  }, []);
+  const {
+    dialog,
+    inputValue,
+    setInputValue,
+    isBlockMath,
+    setIsBlockMath,
+    handleClose,
+    handleConfirm
+  } = useGlobalDialog();
 
   if (!dialog) return null;
-
-  const handleClose = () => {
-    dialog.resolve(null);
-    setDialog(null);
-  };
-
-  const handleConfirm = () => {
-    if (dialog.type === 'prompt') {
-      dialog.resolve(inputValue);
-    } else if (dialog.type === 'mathPrompt') {
-      dialog.resolve({ latex: inputValue, isBlock: isBlockMath });
-    } else {
-      dialog.resolve(true);
-    }
-    setDialog(null);
-  };
 
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in duration-200">

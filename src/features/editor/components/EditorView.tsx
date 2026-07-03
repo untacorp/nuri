@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import { FileText } from 'lucide-react';
 import { turndownService } from '~/features/editor/utils/markdown';
 import { generateDiffHtml } from '~/features/editor/utils/diffRenderer';
-import { LibraryNode } from '~/features/library/components/TreeNode';
+import { LibraryNode } from '~/types/library';
 import InspectorContent from '~/features/inspector/components/InspectorContent';
 import AssemblerView from '~/features/assembler/components/AssemblerView';
 import LibraryContent from '~/features/library/components/LibraryContent';
 import DiffViewer from '~/features/inspector/components/DiffViewer';
 import EditorSheet from '~/features/editor/components/EditorSheet';
-
+import { useEditorLayout } from '~/features/editor/hooks/useEditorLayout';
 interface EditorViewProps {
   activeBook: LibraryNode | null;
   activePath: string | null;
@@ -29,33 +29,18 @@ export default function EditorView({
   const [diffContent, setDiffContent] = useState<{ html: string; hash: string; rawContent: string } | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(false);
   
-  // Generic Panel States
-  const [layoutSwapped, setLayoutSwapped] = useState(false); // false: Left=Library, Right=Inspector. true: Left=Inspector, Right=Library
-  
-  const [showLibrary, setShowLibrary] = useState(true);
-  const [showInspector, setShowInspector] = useState(false);
-
-  const showLeftPanel = layoutSwapped ? showInspector : showLibrary;
-  const showRightPanel = layoutSwapped ? showLibrary : showInspector;
-
-  const setShowLeftPanel = (val: boolean | ((prev: boolean) => boolean)) => {
-    if (layoutSwapped) {
-      setShowInspector(prev => typeof val === 'function' ? val(prev) : val);
-    } else {
-      setShowLibrary(prev => typeof val === 'function' ? val(prev) : val);
-    }
-  };
-
-  const setShowRightPanel = (val: boolean | ((prev: boolean) => boolean)) => {
-    if (layoutSwapped) {
-      setShowLibrary(prev => typeof val === 'function' ? val(prev) : val);
-    } else {
-      setShowInspector(prev => typeof val === 'function' ? val(prev) : val);
-    }
-  };
-  
-  const [leftPanelWidth, setLeftPanelWidth] = useState(288);
-  const [rightPanelWidth, setRightPanelWidth] = useState(320);
+  const {
+    layoutSwapped,
+    setLayoutSwapped,
+    showLeftPanel,
+    setShowLeftPanel,
+    showRightPanel,
+    setShowRightPanel,
+    leftPanelWidth,
+    rightPanelWidth,
+    handleLeftDrag,
+    handleRightDrag
+  } = useEditorLayout();
 
   useEffect(() => {
     if (editor) {
@@ -82,44 +67,7 @@ export default function EditorView({
     setDiffContent({ html: diffHtml, hash, rawContent: content });
   };
 
-  // Drag Handlers
-  const handleLeftDrag = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const startX = e.clientX;
-    const startWidth = leftPanelWidth;
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      const delta = moveEvent.clientX - startX;
-      setLeftPanelWidth(Math.max(200, Math.min(startWidth + delta, 800)));
-    };
-
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    };
-
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-  };
-
-  const handleRightDrag = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const startX = e.clientX;
-    const startWidth = rightPanelWidth;
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      const delta = moveEvent.clientX - startX;
-      setRightPanelWidth(Math.max(250, Math.min(startWidth - delta, 600)));
-    };
-
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    };
-
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-  };
+  // Drag Handlers moved to hook
 
   const renderLibraryContent = (isRightSide: boolean, onCollapse: () => void) => (
     <LibraryContent

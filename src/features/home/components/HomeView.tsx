@@ -1,5 +1,5 @@
 import { Library, Plus, Trash2, Edit2, Settings } from 'lucide-react';
-import { LibraryNode } from './TreeNode';
+import { LibraryNode } from '~/types/library';
 
 interface HomeViewProps {
   tree: LibraryNode[];
@@ -41,7 +41,7 @@ export default function HomeView({ tree, openBook, onOpenModal, onEditBook, onDe
           <div 
             key={book.path} 
             onClick={() => openBook(book)}
-            className="group relative aspect-[3/4] bg-bg-card rounded-none border border-border-main hover:border-text-main transition-all duration-300 p-5 flex flex-col justify-between overflow-hidden cursor-pointer bg-cover bg-center"
+            className="group relative aspect-3/4 bg-bg-card rounded-none border border-border-main hover:border-text-main transition-all duration-300 p-5 flex flex-col justify-between overflow-hidden cursor-pointer bg-cover bg-center"
             style={book.cover_image ? { backgroundImage: `url(${book.cover_image})` } : undefined}
           >
             {/* Dark Overlay for Cover Images */}
@@ -84,7 +84,7 @@ export default function HomeView({ tree, openBook, onOpenModal, onEditBook, onDe
                 <p className={`text-[10px] font-mono tracking-wider ${
                   book.cover_image ? 'text-zinc-400' : 'text-text-muted'
                 }`}>
-                  Buku Nuri
+                  Buku
                 </p>
               )}
             </div>

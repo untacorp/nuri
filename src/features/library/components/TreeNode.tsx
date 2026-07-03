@@ -1,16 +1,7 @@
 import React, { useState } from 'react';
 import { FileText, Folder, FolderOpen, Plus, ChevronRight, ChevronDown } from 'lucide-react';
 
-export interface LibraryNode {
-  name: string;
-  type: string;
-  path: string;
-  children?: LibraryNode[];
-  description?: string;
-  cover_image?: string;
-  auto_compile?: boolean;
-  disabled_chapters?: string[];
-}
+import { LibraryNode } from '~/types/library';
 
 interface TreeNodeProps {
   node: LibraryNode;

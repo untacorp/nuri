@@ -1,5 +1,5 @@
 import { Eye, Pencil, Bold, Italic, Strikethrough, Heading1, Heading2, Heading3, List, ListOrdered, Undo, Redo, PanelRight, PanelLeft, Quote, Code, Minus, Sigma } from 'lucide-react';
-import { showMathPrompt } from '../../ui/components/GlobalDialog';
+import { showMathPrompt } from '~/features/ui/components/GlobalDialog';
 
 interface EditorToolbarProps {
   editor: any;
@@ -52,7 +52,7 @@ export default function EditorToolbar({
     <div className="w-full border-b border-border-main bg-bg-card px-6 py-3 flex items-center justify-between gap-2 select-none">
       {/* Left Panel Button (Fixed, no wrap) */}
       {!showLeftPanel && (
-        <div className="flex items-center flex-shrink-0 mr-1">
+        <div className="flex items-center shrink-0 mr-1">
           <button 
             onClick={() => setShowLeftPanel(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-none text-xs font-bold tracking-wider transition-all border font-mono bg-bg-card text-text-muted border-border-main hover:border-text-main hover:text-text-main mr-2"
@@ -151,7 +151,7 @@ export default function EditorToolbar({
 
       {/* Right Panel Button (Fixed, no wrap) */}
       {!showRightPanel && (
-        <div className="flex items-center flex-shrink-0 ml-1">
+        <div className="flex items-center shrink-0 ml-1">
           <div className="w-px h-6 bg-border-main mx-1 mr-2"></div>
           <button 
             onClick={() => {

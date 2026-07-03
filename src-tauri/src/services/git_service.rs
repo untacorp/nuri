@@ -9,6 +9,11 @@ pub struct GitCommitHistory {
     message: String,
 }
 
+#[tauri::command]
+pub fn check_git_installed() -> bool {
+    Command::new("git").arg("--version").output().is_ok()
+}
+
 pub fn git_commit(book_path: &str, message: &str) -> bool {
     let path = Path::new(book_path);
     if !path.exists() {
@@ -16,16 +21,26 @@ pub fn git_commit(book_path: &str, message: &str) -> bool {
     }
     let git_dir = path.join(".git");
     if !git_dir.exists() {
-        let _ = Command::new("git")
+        if Command::new("git")
             .arg("init")
             .current_dir(book_path)
-            .output();
+            .output()
+            .is_ok() {
+            // Ensure local config is set so commits don't fail on fresh machines
+            let _ = Command::new("git").args(["config", "user.name", "Author App"]).current_dir(book_path).output();
+            let _ = Command::new("git").args(["config", "user.email", "author@local.app"]).current_dir(book_path).output();
+        }
     }
-    let _ = Command::new("git")
+    
+    let add_out = Command::new("git")
         .arg("add")
         .arg(".")
         .current_dir(book_path)
         .output();
+        
+    if add_out.is_err() {
+        return false;
+    }
 
     let output = Command::new("git")
         .arg("commit")
@@ -49,7 +64,7 @@ pub fn git_commit(book_path: &str, message: &str) -> bool {
 
 #[tauri::command]
 pub fn get_file_history(app: tauri::AppHandle, absolute_path: String) -> Result<Vec<GitCommitHistory>, String> {
-    let lib = crate::library_service::get_library(app)?;
+    let lib = crate::services::library_service::get_library(app)?;
     let book = lib.iter().find(|b| absolute_path.starts_with(&b.path))
         .ok_or("Book not found")?;
     let book_path = &book.path;
@@ -98,7 +113,7 @@ pub fn get_file_history(app: tauri::AppHandle, absolute_path: String) -> Result<
 
 #[tauri::command]
 pub fn get_file_content_at_commit(app: tauri::AppHandle, absolute_path: String, hash: String) -> Result<String, String> {
-    let lib = crate::library_service::get_library(app)?;
+    let lib = crate::services::library_service::get_library(app)?;
     let book = lib.iter().find(|b| absolute_path.starts_with(&b.path))
         .ok_or("Book not found")?;
     let book_path = &book.path;

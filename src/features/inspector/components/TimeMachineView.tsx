@@ -1,12 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
 import { GitCommit, Clock, RefreshCw } from 'lucide-react';
-import { fetchHistory, fetchHistoryContent } from '~/features/editor/services/api';
-
-interface Commit {
-  hash: string;
-  message: string;
-  date: string;
-}
+import { useTimeMachine } from '../hooks/useTimeMachine';
 
 interface TimeMachineViewProps {
   activePath: string | null;
@@ -15,38 +8,13 @@ interface TimeMachineViewProps {
 }
 
 export default function TimeMachineView({ activePath, onContentSelect, status }: TimeMachineViewProps) {
-  const [history, setHistory] = useState<Commit[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedHash, setSelectedHash] = useState<string | null>(null);
-  
-  const loadHistory = useCallback(() => {
-    if (activePath) {
-      setLoading(true);
-      fetchHistory(activePath).then(data => {
-        setHistory(data.history || []);
-        setLoading(false);
-      });
-    }
-  }, [activePath]);
-
-  useEffect(() => {
-    loadHistory();
-    setSelectedHash(null);
-  }, [activePath, loadHistory]);
-
-  useEffect(() => {
-    if (status === 'Synced') {
-      loadHistory();
-    }
-  }, [status, loadHistory]);
-
-  const handleViewCommit = (hash: string) => {
-    if (!activePath) return;
-    setSelectedHash(hash);
-    fetchHistoryContent(activePath, hash).then(data => {
-      onContentSelect(data.content, hash);
-    });
-  };
+  const {
+    history,
+    loading,
+    selectedHash,
+    loadHistory,
+    handleViewCommit
+  } = useTimeMachine(activePath, status, onContentSelect);
 
   return (
     <div className="flex flex-col border-b border-border-main">

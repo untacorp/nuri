@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { PanelRightClose, PanelLeftClose, ArrowLeftRight, Clock, FileText, Activity } from 'lucide-react';
 import TimeMachineView from './TimeMachineView';
 import WordFrequencyView from './WordFrequencyView';
+import { useInspectorAccordion } from '../hooks/useInspectorAccordion';
 
 interface InspectorContentProps {
   activePath: string;
@@ -14,13 +15,7 @@ interface InspectorContentProps {
 }
 
 export default function InspectorContent({ activePath, onClose, onContentSelect, status, editor, isRightSide, onToggleSwap }: InspectorContentProps) {
-  const [openSections, setOpenSections] = useState<string[]>(['time-machine']);
-
-  const toggleSection = (id: string) => {
-    setOpenSections(prev => 
-      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
-    );
-  };
+  const { openSections, toggleSection } = useInspectorAccordion(['time-machine']);
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">

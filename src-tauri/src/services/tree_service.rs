@@ -2,7 +2,7 @@ use tauri::AppHandle;
 use std::fs;
 use std::path::Path;
 use serde::{Deserialize, Serialize};
-use crate::library_service::get_library;
+use crate::services::library_service::get_library;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TreeNode {
@@ -20,6 +20,18 @@ pub struct TreeNode {
     auto_compile: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     disabled_chapters: Option<Vec<String>>,
+}
+
+fn determine_dir_node_type(depth: usize) -> &'static str {
+    match depth {
+        0 => "book",
+        1 => "part-folder",
+        _ => "sub-folder",
+    }
+}
+
+fn determine_file_node_type(depth: usize) -> &'static str {
+    if depth >= 2 { "version" } else { "part" }
 }
 
 fn build_tree(dir_path: &Path, depth: usize) -> Vec<TreeNode> {
@@ -44,17 +56,9 @@ fn build_tree(dir_path: &Path, depth: usize) -> Vec<TreeNode> {
         let path_str = full_path.to_string_lossy().replace("\\", "/");
         
         if full_path.is_dir() {
-            let node_type = if depth == 1 {
-                "part-folder"
-            } else if depth >= 2 {
-                "sub-folder"
-            } else {
-                "chapter"
-            };
-            
             tree.push(TreeNode {
                 name: file_name,
-                node_type: node_type.to_string(),
+                node_type: determine_dir_node_type(depth).to_string(),
                 path: path_str,
                 children: Some(build_tree(&full_path, depth + 1)),
                 description: None,
@@ -66,15 +70,10 @@ fn build_tree(dir_path: &Path, depth: usize) -> Vec<TreeNode> {
             if file_name == "chapter.json" || file_name == "assembly.json" {
                 continue;
             }
-            let node_type = if depth == 2 {
-                "version"
-            } else {
-                "part"
-            };
             
             tree.push(TreeNode {
                 name: file_name,
-                node_type: node_type.to_string(),
+                node_type: determine_file_node_type(depth).to_string(),
                 path: path_str,
                 children: None,
                 description: None,
@@ -105,7 +104,7 @@ pub fn fetch_tree(app: AppHandle) -> Result<TreeResponse, String> {
                 name: book.name,
                 node_type: "book".to_string(),
                 path: book.path.clone(),
-                children: Some(build_tree(path, 0)),
+                children: Some(build_tree(path, 0)), // Depth 0 starts at the chapters inside the book
                 description: book.description,
                 cover_image: book.cover_image,
                 auto_compile: book.auto_compile,

@@ -1,8 +1,8 @@
 use std::fs;
 use std::path::Path;
 use tauri::AppHandle;
-use crate::library_service::get_library;
-use crate::git_service::git_commit;
+use crate::services::library_service::get_library;
+use crate::services::git_service::git_commit;
 
 #[tauri::command]
 pub fn read_file(path: String) -> Result<String, String> {

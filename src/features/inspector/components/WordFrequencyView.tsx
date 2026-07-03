@@ -1,60 +1,12 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useWordFrequency } from '../hooks/useWordFrequency';
 
 interface WordFrequencyViewProps {
   editor: any;
   activePath: string | null;
 }
 
-const STOP_WORDS = new Set([
-  'dan', 'di', 'ke', 'dari', 'yang', 'itu', 'ini', 'untuk', 'pada', 'dengan', 
-  'adalah', 'sebagai', 'tidak', 'akan', 'juga', 'atau', 'dalam', 'bisa', 
-  'bahwa', 'karena', 'oleh', 'saat', 'sudah', 'ada', 'mereka', 'dia', 'kita',
-  'kami', 'aku', 'kamu', 'saya', 'anda', 'ia', 'lalu', 'seperti', 'kepada',
-  'bukan', 'saja', 'telah', 'namun', 'tetapi', 'tapi', 'sementara'
-]);
-
 export default function WordFrequencyView({ editor, activePath }: WordFrequencyViewProps) {
-  const [text, setText] = useState('');
-
-  // Update whenever editor content changes
-  useEffect(() => {
-    if (!editor) return;
-    
-    const updateText = () => {
-      setText(editor.getText());
-    };
-    
-    editor.on('transaction', updateText);
-    updateText(); // initial load
-    
-    return () => {
-      editor.off('transaction', updateText);
-    };
-  }, [editor, activePath]);
-
-  const wordFrequencies = useMemo(() => {
-    if (!text) return [];
-    
-    // Normalize and split by non-word characters
-    const words = text
-      .toLowerCase()
-      .replace(/[^\w\s]/g, ' ')
-      .split(/\s+/)
-      .filter(w => w.length > 2 && !STOP_WORDS.has(w));
-      
-    const counts: Record<string, number> = {};
-    for (const w of words) {
-      counts[w] = (counts[w] || 0) + 1;
-    }
-    
-    // Convert to array and sort by frequency (descending)
-    const sorted = Object.entries(counts)
-      .map(([word, count]) => ({ word, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 50); // Top 50
-      
-    return sorted;
-  }, [text]);
+  const wordFrequencies = useWordFrequency(editor, activePath);
 
   return (
     <div className="flex flex-col border-b border-border-main bg-bg-card max-h-[400px] overflow-y-auto p-3">

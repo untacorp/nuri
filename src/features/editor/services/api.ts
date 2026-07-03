@@ -44,7 +44,15 @@ export const fetchChapterConfig = async (path: string): Promise<ChapterConfig> =
   };
 };
 
-export const saveChapterConfig = async (path: string, config: any) => {
+export const saveChapterConfig = async (path: string, config: string[]) => {
   await invoke('save_chapter_config', { path, config });
   return { success: true };
+};
+
+export const checkGitInstalled = async (): Promise<boolean> => {
+  try {
+    return await invoke<boolean>('check_git_installed');
+  } catch {
+    return false;
+  }
 };

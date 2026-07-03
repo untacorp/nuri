@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import { LibraryNode } from '../components/TreeNode';
+import { LibraryNode } from '~/types/library';
 
 export const fetchTree = async (): Promise<{ tree: LibraryNode[] }> => {
   return await invoke<{ tree: LibraryNode[] }>('fetch_tree');

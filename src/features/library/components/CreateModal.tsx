@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { LibraryNode } from './TreeNode';
+import { useCreateModal } from '../hooks/useCreateModal';
+import { LibraryNode } from '~/types/library';
 
 interface CreateModalProps {
   isOpen: boolean;
@@ -12,113 +12,23 @@ interface CreateModalProps {
 }
 
 export default function CreateModal({ isOpen, type, parentNode, onClose, onSubmit, editNode }: CreateModalProps) {
-  const [name, setName] = useState('');
-  const [customPath, setCustomPath] = useState('');
-  const [description, setDescription] = useState('');
-  const [coverImage, setCoverImage] = useState('');
-  const [createSubfolder, setCreateSubfolder] = useState(true);
-  const [autoCompile, setAutoCompile] = useState<'inherit' | 'active' | 'inactive'>('inherit');
-  
-  useEffect(() => { 
-    if (isOpen) {
-      if (type === 'edit-book' && editNode) {
-        setName(editNode.name);
-        setCustomPath(editNode.path);
-        setDescription(editNode.description || '');
-        setCoverImage(editNode.cover_image || '');
-        setCreateSubfolder(false);
-        if (editNode.auto_compile === true) {
-          setAutoCompile('active');
-        } else if (editNode.auto_compile === false) {
-          setAutoCompile('inactive');
-        } else {
-          setAutoCompile('inherit');
-        }
-      } else {
-        setName('');
-        setCustomPath('');
-        setDescription('');
-        setCoverImage('');
-        setCreateSubfolder(true);
-        setAutoCompile('inherit');
-      }
-    }
-  }, [isOpen, type, editNode]);
-
-  const getFinalPath = () => {
-    let path = customPath.trim();
-    if (!path) return '';
-    if (createSubfolder && name.trim()) {
-      // Normalize slashes based on what's used in the path
-      const separator = path.includes('\\') ? '\\' : '/';
-      // Remove trailing slash if present
-      if (path.endsWith('/') || path.endsWith('\\')) {
-        path = path.slice(0, -1);
-      }
-      return `${path}${separator}${name.trim()}`;
-    }
-    return path;
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          // Standard cover card ratio in our UI is aspect-3/4.
-          // 240px width and 320px height is ideal resolution for small display card.
-          const maxW = 240;
-          const maxH = 320;
-          
-          canvas.width = maxW;
-          canvas.height = maxH;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            // Draw and crop image to fit 3:4 aspect ratio center
-            const imgRatio = img.width / img.height;
-            const targetRatio = maxW / maxH;
-            let sx = 0, sy = 0, sw = img.width, sh = img.height;
-            
-            if (imgRatio > targetRatio) {
-              // Image is wider than 3:4, crop horizontal sides
-              sw = img.height * targetRatio;
-              sx = (img.width - sw) / 2;
-            } else {
-              // Image is taller than 3:4, crop vertical sides
-              sh = img.width / targetRatio;
-              sy = (img.height - sh) / 2;
-            }
-            
-            ctx.drawImage(img, sx, sy, sw, sh, 0, 0, maxW, maxH);
-            // Convert to JPEG with 70% quality for tiny file size (~15KB) but good looking
-            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-            setCoverImage(compressedBase64);
-          }
-        };
-        img.src = event.target?.result as string;
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (name.trim() && ((type !== 'book' && type !== 'edit-book') || customPath.trim())) {
-      onSubmit(
-        name.trim(), 
-        type, 
-        parentNode, 
-        (type === 'book' || type === 'edit-book') ? getFinalPath() : undefined,
-        (type === 'book' || type === 'edit-book') ? description.trim() : undefined,
-        (type === 'book' || type === 'edit-book') ? coverImage : undefined,
-        (type === 'book' || type === 'edit-book') ? (autoCompile === 'active' ? true : autoCompile === 'inactive' ? false : null) : undefined
-      );
-      onClose();
-    }
-  };
+  const {
+    name,
+    setName,
+    customPath,
+    setCustomPath,
+    description,
+    setDescription,
+    coverImage,
+    setCoverImage,
+    createSubfolder,
+    setCreateSubfolder,
+    autoCompile,
+    setAutoCompile,
+    getFinalPath,
+    handleImageChange,
+    handleSubmit
+  } = useCreateModal(isOpen, type, parentNode, editNode, onSubmit, onClose);
 
   if (!isOpen) return null;
 

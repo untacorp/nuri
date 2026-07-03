@@ -1,35 +1,19 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useEditor } from '@tiptap/react';
-import { Extension, textInputRule } from '@tiptap/core';
-import StarterKit from '@tiptap/starter-kit';
-import { Mathematics } from '@tiptap/extension-mathematics';
 import 'katex/dist/katex.min.css';
 
 import { fetchTree, createNode, deleteBook, updateBook, compileManuscript } from '~/features/library/services/api';
-import { fetchFile, saveFile } from '~/features/editor/services/api';
+import { fetchFile, saveFile, checkGitInstalled } from '~/features/editor/services/api';
 import { turndownService, parseMarkdown } from '~/features/editor/utils/markdown';
 
 import CreateModal from '~/features/library/components/CreateModal';
-import HomeView from '~/features/library/components/HomeView';
+import HomeView from '~/features/home/components/HomeView';
 import EditorView from '~/features/editor/components/EditorView';
-import SettingsModal from '~/features/library/components/SettingsModal';
-import GlobalDialog, { showConfirm, showPrompt } from '~/features/ui/components/GlobalDialog';
-import { LibraryNode } from '~/features/library/components/TreeNode';
+import SettingsModal from '~/features/home/components/SettingsModal';
+import GlobalDialog, { showConfirm, showAlert } from '~/features/ui/components/GlobalDialog';
+import { LibraryNode } from '~/types/library';
 import { listen } from '@tauri-apps/api/event';
+import { useAppEditor } from '~/features/editor/hooks/useAppEditor';
 import './index.css';
-
-const EmDash = Extension.create({
-  name: 'emDash',
-  addInputRules() {
-    return [
-      textInputRule({
-        find: /---$/,
-        replace: '—',
-      }),
-    ];
-  },
-});
-
 export default function App() {
   const [status, setStatus] = useState('Ready');
   const [tree, setTree] = useState<LibraryNode[]>([]);
@@ -126,76 +110,27 @@ export default function App() {
 
   const saveTimeout = useRef<any>(null);
 
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      EmDash,
-      Mathematics.configure({
-        inlineOptions: {
-          onClick: (node, pos) => {
-            const currentLatex = node.attrs.latex;
-            showPrompt("Edit Rumus LaTeX (Inline)", currentLatex).then((newLatex) => {
-              if (newLatex !== null) {
-                if (newLatex.trim() === '') {
-                  editor?.commands.deleteInlineMath({ pos });
-                } else {
-                  editor?.commands.updateInlineMath({ latex: newLatex.trim(), pos });
-                }
-              }
-            });
-          }
-        },
-        blockOptions: {
-          onClick: (node, pos) => {
-            const currentLatex = node.attrs.latex;
-            showPrompt("Edit Rumus LaTeX (Block)", currentLatex).then((newLatex) => {
-              if (newLatex !== null) {
-                if (newLatex.trim() === '') {
-                  editor?.commands.deleteBlockMath({ pos });
-                } else {
-                  editor?.commands.updateBlockMath({ latex: newLatex.trim(), pos });
-                }
-              }
-            });
-          }
-        }
-      })
-    ],
-    content: '',
-    onUpdate: ({ editor }) => {
-      const currentPath = activePathRef.current;
-      if (isUpdatingFromWs.current || !currentPath || !currentPath.endsWith('.md')) return;
-      
-      setStatus('Editing...');
-      
-      if (saveTimeout.current) clearTimeout(saveTimeout.current);
-      saveTimeout.current = setTimeout(() => {
-        setStatus('Saving...');
-        const html = editor.getHTML();
-        const markdown = turndownService.turndown(html);
-        
-        if (markdown === lastSentMarkdown.current) {
-          setStatus('Synced');
-          return;
-        }
-        
-        lastSentMarkdown.current = markdown;
-        saveFile(currentPath, markdown)
-          .then(() => {
-            setStatus('Synced');
-            autoCompileIfEnabled(currentPath);
-          })
-          .catch((err) => {
-            console.error(err);
-            setStatus('Error');
-          });
-      }, 1500);
-    }
+  const editor = useAppEditor({
+    activePathRef,
+    isUpdatingFromWs,
+    lastSentMarkdown,
+    saveTimeout,
+    setStatus,
+    autoCompileIfEnabled
   });
 
   useEffect(() => {
     loadTree();
     
+    checkGitInstalled().then((isInstalled: boolean) => {
+      if (!isInstalled) {
+        showAlert(
+          "Git Tidak Ditemukan",
+          "Sistem tidak mendeteksi instalasi Git di komputermu.\n\nAplikasi Nuri masih akan berfungsi normal untuk menulis dan menyusun buku. Namun, fitur otomatis 'Mesin Waktu' (Riwayat Perubahan) tidak akan bisa digunakan karena ia mengandalkan Git.\n\nSilakan install Git jika ingin mengaktifkan fitur riwayat penulisan."
+        );
+      }
+    });
+
     let unlistenTree: () => void;
     let unlistenFile: () => void;
 
